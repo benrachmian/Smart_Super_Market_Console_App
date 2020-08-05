@@ -1,4 +1,4 @@
-package Customer;
+package SDMSystem.Customer;
 
 public class Customer {
 
