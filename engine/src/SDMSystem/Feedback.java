@@ -1,6 +1,6 @@
 package SDMSystem;
 
-import SDMSystem.Customer.Customer;
+import SDMSystem.customer.Customer;
 
 public class Feedback {
     private static final int MIN_RANK = 1;

@@ -1,7 +1,7 @@
-package SDMSystem.Store;
+package SDMSystem.store;
 
-import SDMSystem.Customer.Customer;
-import SDMSystem.Product.Product;
+import SDMSystem.customer.Customer;
+import SDMSystem.product.Product;
 
 import java.util.Collection;
 import java.util.Date;

@@ -1,16 +1,17 @@
-package SDMSystem.Store;
+package SDMSystem.store;
 
 import SDMSystem.Feedback;
-import SDMSystem.Location.Locationable;
-import SDMSystem.Product.Product;
-import SDMSystem.Product.ProductInStore;
-import SDMSystem.Exceptions.*;
+import SDMSystem.HasSerialNumber;
+import SDMSystem.location.Locationable;
+import SDMSystem.product.Product;
+import SDMSystem.product.ProductInStore;
+import SDMSystem.exceptions.*;
 import java.awt.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Store implements Locationable {
+public class Store implements Locationable, HasSerialNumber<Integer> {
 
     private static int generatedSerialNumber = 1000;
     private Map<Integer,ProductInStore> productsInStore;
@@ -31,15 +32,22 @@ public class Store implements Locationable {
         this.storeFeedbacks = null;
     }
 
+    public Store(int storeSerialNumber, Point storeLocation, float ppk, String storeName) { //ctor
+        this.productsInStore = new HashMap<>();
+        this.storeLocation = storeLocation;
+        this.ppk = ppk;
+        this.storeSerialNumber = storeSerialNumber;
+        this.storeName = storeName;
+        this.ordersFromStore = null;
+        this.storeFeedbacks = null;
+    }
+
     public void addNewProductToStore(Product newProduct, float price){
-//        if(productsInStore.containsKey(newProduct.getProductSerialNumber())){
-//            throw new ProductAlreadyExistsException(newProduct.getProductSerialNumber());
-//        }
         //if already in store throws exception
-        if(productsInStore.putIfAbsent(newProduct.getProductSerialNumber(),
+        if(productsInStore.putIfAbsent(newProduct.getSerialNumber(),
                                         new ProductInStore(newProduct,price))
                                         != null){
-            throw new ProductAlreadyExistsException(newProduct.getProductSerialNumber());
+            throw new ExistenceException(true,newProduct.getSerialNumber(),"Product", "Store");
         }
     }
 
@@ -51,9 +59,7 @@ public class Store implements Locationable {
         return ppk;
     }
 
-    public int getStoreSerialNumber() {
-        return storeSerialNumber;
-    }
+
 
     public String getStoreName() {
         return storeName;
@@ -71,5 +77,10 @@ public class Store implements Locationable {
         double aPower2 = Math.pow(a, 2);
         double bPower2 = Math.pow(b, 2);
         return Math.sqrt(aPower2 + bPower2);
+    }
+
+    @Override
+    public Integer getSerialNumber() {
+        return storeSerialNumber;
     }
 }

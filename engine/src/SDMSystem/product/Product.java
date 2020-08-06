@@ -1,6 +1,8 @@
-package SDMSystem.Product;
+package SDMSystem.product;
 
-public abstract class Product {
+import SDMSystem.HasSerialNumber;
+
+public class Product implements HasSerialNumber<Integer> {
 
 
     public enum WayOfBuying {
@@ -18,13 +20,20 @@ public abstract class Product {
         this.wayOfBuying = wayOfBuying;
     }
 
+    public Product(int productSerialNumber ,String productName, WayOfBuying wayOfBuying) {
+        this.productSerialNumber = productSerialNumber;
+        this.productName = productName;
+        this.wayOfBuying = wayOfBuying;
+    }
+
     public Product(Product newProduct) {
-        this.productSerialNumber = newProduct.getProductSerialNumber();
+        this.productSerialNumber = newProduct.getSerialNumber();
         this.productName = newProduct.getProductName();
         this.wayOfBuying = newProduct.getWayOfBuying();
     }
 
-    public int getProductSerialNumber() {
+    @Override
+    public Integer getSerialNumber() {
         return productSerialNumber;
     }
 

@@ -1,4 +1,4 @@
-package SDMSystem.Location;
+package SDMSystem.location;
 
 import java.awt.*;
 

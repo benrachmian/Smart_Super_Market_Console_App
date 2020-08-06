@@ -1,4 +1,4 @@
-package SDMSystem.Product;
+package SDMSystem.product;
 
 public class ProductInStore extends Product {
     private float price;
@@ -13,6 +13,7 @@ public class ProductInStore extends Product {
 
     public ProductInStore(Product newProduct, float price) {
         super(newProduct);
+        this.price = price;
     }
 
     public float getPrice() {
