@@ -1,8 +1,6 @@
 package xml;
 
-import SDMSystem.SDMSystem;
-import xml.generated.SDMItem;
-import xml.generated.SDMItems;
+import SDMSystem.system.SDMSystem;
 import xml.generated.SuperDuperMarketDescriptor;
 
 import javax.xml.bind.JAXBContext;

@@ -1,10 +1,15 @@
 package SDMConsole;
 
-import SDMSystem.SDMSystem;
+import SDMSystem.system.SDMSystem;
+import SDMSystem.store.Store;
 import xml.XMLHelper;
 
+import java.util.Map;
+import java.util.Scanner;
+
 public class SDMConsole {
-    SDMSystem sdmSystem;
+    private SDMSystem sdmSystem;
+    private static final int EXIT = 6;
 
     public SDMConsole() {
         sdmSystem = new SDMSystem();
@@ -27,10 +32,37 @@ public class SDMConsole {
     public void startApp(){
         String openingMenu = getOpeningMenu();
         System.out.println(openingMenu);
+        Scanner s = new Scanner(System.in);
+        int answer = s.nextInt();
+
+        while(answer != EXIT) {
+            switch (answer) {
+                case 1:
+                    XMLHelper.FromXmlFileToObject("/xml/ex1-small.xml", sdmSystem);
+                    break;
+                case 2:
+                    printAllStores();
+                    break;
+                default:
+                    System.out.println("def");
+            }
+            System.out.println(openingMenu);
+            answer = s.nextInt();
+        }
 
 
-        XMLHelper.FromXmlFileToObject("/xml/ex1-small.xml",sdmSystem);
 
+
+
+    }
+
+    private void printAllStores() {
+        Map<Integer, Store> storesInSystem = sdmSystem.getStoresInSystemBySerialNumber();
+        for(Store store : storesInSystem.values()){
+            System.out.println("-------------------------------------------------------------------");
+            System.out.println(store.toString());
+            System.out.println("-------------------------------------------------------------------");
+        }
     }
 
 

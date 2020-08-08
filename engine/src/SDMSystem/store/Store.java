@@ -21,6 +21,7 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
     private String storeName;
     private Collection<Order> ordersFromStore;
     private Collection<Feedback> storeFeedbacks;
+    private float totalProfitFromDelivery;
 
     public Store(Point storeLocation, float ppk, String storeName) { //ctor
         this.productsInStore = new HashMap<>();
@@ -30,6 +31,7 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
         this.storeName = storeName;
         this.ordersFromStore = null;
         this.storeFeedbacks = null;
+        this.totalProfitFromDelivery = 0;
     }
 
     public Store(int storeSerialNumber, Point storeLocation, float ppk, String storeName) { //ctor
@@ -82,5 +84,33 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
     @Override
     public Integer getSerialNumber() {
         return storeSerialNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "Store ID:" + storeSerialNumber +
+                "\nStore name:" + storeName +
+                "\n Products in store:" + productsInStoreToSting() +
+                "\n Orders history:" + ordersToString() +
+                "\nPPK: " + ppk +
+                "\nTotal profit from delivery: " + totalProfitFromDelivery;
+    }
+
+    private String ordersToString() {
+        String res = "";
+        for(Order order : ordersFromStore){
+            res = res.concat(order.toString());
+        }
+
+        return res;
+    }
+
+    private String productsInStoreToSting() {
+        String res = "";
+        for(ProductInStore productInStore : productsInStore.values()){
+            res = res.concat(productInStore.toString());
+        }
+
+        return res;
     }
 }

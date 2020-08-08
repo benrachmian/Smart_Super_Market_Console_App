@@ -6,13 +6,13 @@ public class Product implements HasSerialNumber<Integer> {
 
 
     public enum WayOfBuying {
-        BYQUANTITY, BYWEIGHT
+        BY_QUANTITY, BY_WEIGHT
     }
 
-    private static int generatedSerialNumber = 1000;
-    private final int productSerialNumber;
-    private final String productName;
-    private final WayOfBuying wayOfBuying;
+    protected static int generatedSerialNumber = 1000;
+    protected final int productSerialNumber;
+    protected final String productName;
+    protected final WayOfBuying wayOfBuying;
 
     public Product(String productName, WayOfBuying wayOfBuying) {
         this.productSerialNumber = generatedSerialNumber++;
@@ -45,6 +45,10 @@ public class Product implements HasSerialNumber<Integer> {
         return wayOfBuying;
     }
 
-
-
+    @Override
+    public String toString() {
+        return "Product serial number: " + productSerialNumber +
+                "\nProduct name: " + productName +
+                "\nWay of buying: " + wayOfBuying;
+    }
 }

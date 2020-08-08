@@ -1,4 +1,4 @@
-package SDMSystem;
+package SDMSystem.system;
 
 import SDMSystem.product.Product;
 import SDMSystem.store.Store;
@@ -14,11 +14,13 @@ import java.util.Map;
 public class SDMSystem {
     private static final int MAX_COORDINATE = 50;
     private static final int MIN_COORDINATE = 1;
-    private Store[][] storesInSystem;
+    //private Map<Integer,Store> storesInSystem;
+    //In order to create two different way to find a store - by serial number and by location
+    private StoresInSystem storesInSystem;
     private Map<Integer,Product> productsInSystem;
 
     public SDMSystem() {
-        storesInSystem = new Store[MAX_COORDINATE][MAX_COORDINATE];
+        storesInSystem = new StoresInSystem();
         productsInSystem = new HashMap<>();
     }
 
@@ -33,11 +35,8 @@ public class SDMSystem {
     public void addStoreToSystem(Store newStore) {
         Point newStoreLocation = newStore.getStoreLocation();
         //if the store doesn't exist
-        if (storesInSystem[newStoreLocation.x-1][newStoreLocation.y-1] == null) {
-            storesInSystem[newStoreLocation.x-1][newStoreLocation.y-1] = newStore;
-        } else {
-            throw new ExistenceException(true,newStore.getSerialNumber(), "Store", "System");
-        }
+        storesInSystem.addStoreToSystem(newStore,newStoreLocation);
+
     }
 
 
@@ -93,15 +92,23 @@ public class SDMSystem {
         Product.WayOfBuying res;
         switch (purchaseCategory.toLowerCase()){
             case ("quantity")   :
-                res = Product.WayOfBuying.BYQUANTITY;
+                res = Product.WayOfBuying.BY_QUANTITY;
                 break;
             case ("weight")     :
-                res = Product.WayOfBuying.BYWEIGHT;
+                res = Product.WayOfBuying.BY_WEIGHT;
                 break;
             default:
                 throw new EnumConstantNotPresentException(Product.WayOfBuying.class,purchaseCategory);
         }
         
         return res;
+    }
+
+    public Map<Integer, Store> getStoresInSystemBySerialNumber() {
+        return storesInSystem.getStoresInSystemBySerialNumber();
+    }
+
+    public Map<Point, Store> getStoresInSystemByLocation(){
+        return storesInSystem.getStoresInSystemByLocation();
     }
 }

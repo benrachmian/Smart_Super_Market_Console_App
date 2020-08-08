@@ -23,4 +23,11 @@ public class ProductInStore extends Product {
     public float getAmountSold() {
         return amountSold;
     }
+
+    @Override
+    public String toString() {
+        return super.toString() +
+                "\nPrice: " + price +
+                "\nAmount sold: " + amountSold;
+    }
 }
