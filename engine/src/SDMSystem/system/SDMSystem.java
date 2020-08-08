@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 public class SDMSystem {
-    private static final int MAX_COORDINATE = 50;
-    private static final int MIN_COORDINATE = 1;
+    public static final int MAX_COORDINATE = 50;
+    public static final int MIN_COORDINATE = 1;
     //private Map<Integer,Store> storesInSystem;
     //In order to create two different way to find a store - by serial number and by location
     private StoresInSystem storesInSystem;
@@ -41,8 +41,28 @@ public class SDMSystem {
 
 
     public void loadSystem(SuperDuperMarketDescriptor superDuperMarketDescriptor) {
-        loadProducts(superDuperMarketDescriptor.getSDMItems());
-        loadStores(superDuperMarketDescriptor.getSDMStores());
+        StoresInSystem oldStoresInSystem = this.storesInSystem;
+        Map<Integer, Product> oldProductsInSystem = this.productsInSystem;
+        storesInSystem = new StoresInSystem();
+        productsInSystem = new HashMap<>();
+        try {
+            loadProducts(superDuperMarketDescriptor.getSDMItems());
+            loadStores(superDuperMarketDescriptor.getSDMStores());
+            scanForProductsWithoutStore();
+        }
+        catch (Exception e){
+            storesInSystem = oldStoresInSystem;
+            productsInSystem = oldProductsInSystem;
+            throw e;
+        }
+    }
+
+    private void scanForProductsWithoutStore() {
+        for(Product product : productsInSystem.values()){
+            if(product.numberOfStoresSellingTheProduct() == 0){
+                throw new RuntimeException("There are no stores selling product " + product.getSerialNumber());
+            }
+        }
     }
 
     private void loadStores(SDMStores sdmStores) {

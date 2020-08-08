@@ -64,7 +64,19 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
     }
 
     public ProductInStore getProductInStore(int productSerialNumber){
-       return productsInStore.get(productSerialNumber);
+        ProductInStore askedProduct = productsInStore.get(productSerialNumber);
+        if(askedProduct == null){
+            throw new ExistenceException(false,productSerialNumber,"Product","Store");
+        }
+       return askedProduct;
+    }
+
+    public boolean isAvailableInStore(int productSerialNumber){
+        boolean isAvailable = false;
+        if(productsInStore.get(productSerialNumber) != null){
+            isAvailable = true;
+        }
+        return isAvailable;
     }
 
     public String getStoreName() {

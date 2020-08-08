@@ -6,7 +6,7 @@ public class LocationNotInRangeException extends RuntimeException{
     private int minCol;
     private int maxCol;
     private final String EXCEPTION_MESSAGE = "The location row must be between %d to %d" +
-                                            "The location row must be between %d to %d ";
+                                            "\nand the location col must be between %d to %d ";
 
     public LocationNotInRangeException(int minRow, int maxRow, int minCol, int maxCol) {
         this.minRow = minRow;

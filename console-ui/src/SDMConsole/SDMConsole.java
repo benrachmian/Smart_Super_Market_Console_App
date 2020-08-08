@@ -1,23 +1,34 @@
 package SDMConsole;
 
 import SDMSystem.product.Product;
+import SDMSystem.product.ProductInStore;
 import SDMSystem.system.SDMSystem;
 import SDMSystem.store.Store;
 import xml.XMLHelper;
 
+import javax.xml.bind.JAXBException;
+import java.awt.*;
+import java.io.FileNotFoundException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.InputMismatchException;
 import java.util.Map;
 import java.util.Scanner;
 
 public class SDMConsole {
     private SDMSystem sdmSystem;
+    private static final int MIN_CHOOSE = 1;
+    private static final int MAX_CHOOSE = 6;
     private static final int EXIT = 6;
+    private boolean fileLoaded = false;
 
     public SDMConsole() {
         sdmSystem = new SDMSystem();
     }
 
-    private String getOpeningMenu() {
-        String openingMenu =
+    private void printOpeningMenu() {
+        System.out.println(
                 "Welcome to Super Duper Market!\n" +
                         "What would you like to do?\n" +
                         "Please insert the option's number.\n" +
@@ -26,34 +37,163 @@ public class SDMConsole {
                         "3.Show all products in the system\n" +
                         "4.Make order\n" +
                         "5.Show order history\n" +
-                        "6.Exit";
-        return openingMenu;
+                        "6.Exit");
     }
 
     public void startApp() {
-        String openingMenu = getOpeningMenu();
-        System.out.println(openingMenu);
-        Scanner s = new Scanner(System.in);
-        int answer = s.nextInt();
+        printOpeningMenu();
+        int choose = Validation.getValidChoice(MIN_CHOOSE,MAX_CHOOSE);
 
-        while (answer != EXIT) {
-            switch (answer) {
-                case 1:
-                    XMLHelper.FromXmlFileToObject("/xml/ex1-small.xml", sdmSystem);
-                    break;
-                case 2:
-                    printAllStores();
-                    break;
-                case 3:
-                    printAllProducts();
-                    break;
+        while (choose != EXIT) {
+            if (choose != 1) {
+                if (!fileLoaded) {
+                    System.out.println("You must load a file first before making that action!");
+                } else {
+                    switch (choose) {
+                        case 2:
+                            printAllStoresAndTheirProducts();
+                            break;
+                        case 3:
+                            printAllProducts();
+                            break;
+                        case 4:
+                            makeOrder();
+                            break;
+                    }
+                }
+            } else {
+                if(loadFileToSystem()){
+                    fileLoaded = true;
+                    System.out.println("File loaded successfully!");
+                }
             }
-            System.out.println(openingMenu);
-            answer = s.nextInt();
+            printOpeningMenu();
+            choose = Validation.getValidChoice(MIN_CHOOSE,MAX_CHOOSE);
         }
     }
 
-    private void printAllStores() {
+    private void makeOrder() {
+        Scanner s = new Scanner(System.in);
+        printAllStoresIdNamePpk();
+        try {
+            System.out.println("Please choose a store by entering its serial number: ");
+            int chosenStoreSerialNumber = s.nextInt();
+            Store chosenStore = sdmSystem.getStoresInSystemBySerialNumber().get(chosenStoreSerialNumber);
+            if (chosenStore != null) {
+                Date orderDate = getOrderDateFromUser();
+                Point userLocation = getLocationFromTheUser(chosenStore.getLocation());
+                if (userLocation != null) {
+                    printAllProductsForOrderFromStore(chosenStore);
+                    chooseProductAndBuy(chosenStore);
+                }
+            } else {
+                System.out.println("No such store in the system!");
+            }
+        }
+        catch(InputMismatchException e){
+            System.out.println("You must enter an integer!");
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+
+
+    }
+
+    private void chooseProductAndBuy(Store chosenStore) {
+        Scanner s = new Scanner(System.in);
+        System.out.println("Choose a product by entering its serial number");
+        int chosenProductSerialNumber = s.nextInt();
+        ProductInStore chosenProduct = chosenStore.getProductInStore(chosenProductSerialNumber);
+
+    }
+
+    private void printAllProductsForOrderFromStore(Store chosenStore) {
+        ProductInStore productInChosenStore;
+        for(Product product : sdmSystem.getProductsInSystem().values()){
+            System.out.println("-------------------------------------------------------------------");
+            System.out.println("Product serial number: " + product.getSerialNumber());
+            System.out.println("Product name: " + product.getProductName());
+            System.out.println("Way of buying: " + product.getWayOfBuying());
+            System.out.print("Price: ");
+            //productInChosenStore = chosenStore.getProductInStore(product.getSerialNumber());
+            if(!chosenStore.isAvailableInStore(product.getSerialNumber())){
+                System.out.println("The product is not available in that store!");
+            }
+            else{
+                System.out.println(chosenStore.getProductInStore(product.getSerialNumber()).getPrice());
+            }
+
+        }
+    }
+
+    private Point getLocationFromTheUser(Point storeLocation) {
+        Scanner s = new Scanner(System.in);
+        int x,y;
+        Point userLocation = null;
+        System.out.println("Please enter your location using coordinates x,y.");
+        System.out.print("x: ");
+        x = s.nextInt();
+        System.out.print("y: ");
+        y = s.nextInt();
+        if(Validation.checkIfLocationInRange(x,y,SDMSystem.MIN_COORDINATE,SDMSystem.MAX_COORDINATE)){
+            if(!(x==storeLocation.x && y==storeLocation.y)){
+                userLocation = new Point(x,y);
+            }
+            else{
+                System.out.println("The location can't be the same as the store location!");
+            }
+        }
+        return userLocation;
+    }
+
+    private Date getOrderDateFromUser() throws ParseException {
+        Date orderDate;
+        Scanner s = new Scanner(System.in);
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM-hh:mm");
+        System.out.println("Please enter the order date in this format: dd/MM-hh:mm");
+        String dateInput = s.nextLine();
+        orderDate = format.parse(dateInput);
+        return orderDate;
+    }
+
+    private void printAllStoresIdNamePpk() {
+        Map<Integer, Store> storesInSystem = sdmSystem.getStoresInSystemBySerialNumber();
+        System.out.println("The stores in the system are:");
+        for(Store store : storesInSystem.values()){
+            System.out.println("-------------------------------------------------------------------");
+            System.out.println("Store serial number: " + store.getSerialNumber());
+            System.out.println("Store name: " + store.getStoreName());
+            System.out.println("Store PPK: " + store.getPpk());
+        }
+    }
+
+    private boolean loadFileToSystem() {
+        Scanner scanPath = new Scanner(System.in);
+        boolean succeeded = false;
+        System.out.print("Please insert the path of the xml file: ");
+        String filePath = scanPath.nextLine();
+        if(XMLHelper.isXmlFile(filePath)) {
+            try {
+                XMLHelper.FromXmlFileToObject(filePath, sdmSystem);
+                succeeded = true;
+            } catch (JAXBException e) {
+                System.out.println("Something went wrong with JAXB. Please try different file.");
+            } catch (FileNotFoundException e) {
+                System.out.println("The file does not exist.");
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
+        else{
+            System.out.println("The file is not an XML file!");
+        }
+        return succeeded;
+    }
+
+
+
+    private void printAllStoresAndTheirProducts() {
         Map<Integer, Store> storesInSystem = sdmSystem.getStoresInSystemBySerialNumber();
         for (Store store : storesInSystem.values()) {
             System.out.println("-------------------------------------------------------------------");

@@ -6,6 +6,9 @@ import xml.generated.SuperDuperMarketDescriptor;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 public class XMLHelper {
@@ -18,14 +21,14 @@ public class XMLHelper {
     private XMLHelper() {
     }
 
-    public static void FromXmlFileToObject(String fileName, SDMSystem sdmSystem){
-        InputStream inputStream = XMLHelper.class.getResourceAsStream(fileName);
-        try {
+    public static void FromXmlFileToObject(String filePath, SDMSystem sdmSystem) throws FileNotFoundException, JAXBException {
+       // try {
+            InputStream inputStream = new FileInputStream(new File(filePath));
             SuperDuperMarketDescriptor superDuperMarketDescriptor = deserializeFrom(inputStream);
             sdmSystem.loadSystem(superDuperMarketDescriptor);
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
+//        } catch (JAXBException | FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
     }
 
 
@@ -33,6 +36,14 @@ public class XMLHelper {
         JAXBContext jc = JAXBContext.newInstance(JAXB_XML_GAME_PACKAGE_NAME);
         Unmarshaller u = jc.createUnmarshaller();
         return (SuperDuperMarketDescriptor) u.unmarshal(in);
+    }
+
+    public static boolean isXmlFile(String filePath) {
+        boolean res = true;
+        if(filePath.length() <4 || !filePath.substring(filePath.length()-4).equals(".xml")){
+            res = false;
+        }
+        return res;
     }
 }
 
