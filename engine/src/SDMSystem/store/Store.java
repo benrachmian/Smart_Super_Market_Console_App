@@ -9,6 +9,7 @@ import SDMSystem.exceptions.*;
 import java.awt.*;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class Store implements Locationable, HasSerialNumber<Integer> {
@@ -29,7 +30,7 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
         this.ppk = ppk;
         this.storeSerialNumber = generatedSerialNumber++;
         this.storeName = storeName;
-        this.ordersFromStore = null;
+        this.ordersFromStore = new HashSet<>();
         this.storeFeedbacks = null;
         this.totalProfitFromDelivery = 0;
     }
@@ -40,7 +41,7 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
         this.ppk = ppk;
         this.storeSerialNumber = storeSerialNumber;
         this.storeName = storeName;
-        this.ordersFromStore = null;
+        this.ordersFromStore = new HashSet<>();
         this.storeFeedbacks = null;
     }
 
@@ -51,6 +52,7 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
                                         != null){
             throw new ExistenceException(true,newProduct.getSerialNumber(),"Product", "Store");
         }
+        newProduct.addStore(this);
     }
 
     public Point getStoreLocation() {
@@ -61,7 +63,9 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
         return ppk;
     }
 
-
+    public ProductInStore getProductInStore(int productSerialNumber){
+       return productsInStore.get(productSerialNumber);
+    }
 
     public String getStoreName() {
         return storeName;
@@ -88,18 +92,23 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
 
     @Override
     public String toString() {
-        return "Store ID:" + storeSerialNumber +
-                "\nStore name:" + storeName +
-                "\n Products in store:" + productsInStoreToSting() +
-                "\n Orders history:" + ordersToString() +
+        return "Store ID: " + storeSerialNumber +
+                "\nStore name: " + storeName +
+                "\nProducts in store:\n\n" + productsInStoreToSting() +
+                "\nOrders history: " + ordersToString() +
                 "\nPPK: " + ppk +
                 "\nTotal profit from delivery: " + totalProfitFromDelivery;
     }
 
     private String ordersToString() {
         String res = "";
-        for(Order order : ordersFromStore){
-            res = res.concat(order.toString());
+        if (ordersFromStore.size() != 0) {
+            for (Order order : ordersFromStore) {
+                res = res.concat(order.toString());
+            }
+        }
+        else{
+            res = res.concat("There are no any orders yet!");
         }
 
         return res;
@@ -108,7 +117,7 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
     private String productsInStoreToSting() {
         String res = "";
         for(ProductInStore productInStore : productsInStore.values()){
-            res = res.concat(productInStore.toString());
+            res = res.concat(productInStore.toString() + "\n");
         }
 
         return res;

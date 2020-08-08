@@ -1,18 +1,35 @@
 package SDMSystem.product;
 
 import SDMSystem.HasSerialNumber;
+import SDMSystem.store.Store;
+
+import java.util.Collection;
+import java.util.LinkedList;
 
 public class Product implements HasSerialNumber<Integer> {
 
 
     public enum WayOfBuying {
-        BY_QUANTITY, BY_WEIGHT
+        BY_QUANTITY {
+            @Override
+            public String toString() {
+                return "By quantity";
+            }
+        }, BY_WEIGHT{
+            @Override
+            public String toString() {
+                return "By weight";
+            }
+        }
     }
 
     protected static int generatedSerialNumber = 1000;
     protected final int productSerialNumber;
     protected final String productName;
     protected final WayOfBuying wayOfBuying;
+    protected Collection<Store> storesSellingTheProduct = new LinkedList<>();
+    protected float amountSoldInAllStores = 0;
+
 
     public Product(String productName, WayOfBuying wayOfBuying) {
         this.productSerialNumber = generatedSerialNumber++;
@@ -30,7 +47,15 @@ public class Product implements HasSerialNumber<Integer> {
         this.productSerialNumber = newProduct.getSerialNumber();
         this.productName = newProduct.getProductName();
         this.wayOfBuying = newProduct.getWayOfBuying();
+        this.storesSellingTheProduct = newProduct.getStoresSellingTheProduct();
+        this.amountSoldInAllStores = newProduct.getAmountSoldInAllStores();
     }
+
+    public Collection<Store> getStoresSellingTheProduct() {
+        return storesSellingTheProduct;
+    }
+
+
 
     @Override
     public Integer getSerialNumber() {
@@ -50,5 +75,34 @@ public class Product implements HasSerialNumber<Integer> {
         return "Product serial number: " + productSerialNumber +
                 "\nProduct name: " + productName +
                 "\nWay of buying: " + wayOfBuying;
+    }
+
+    public int numberOfStoresSellingTheProduct(){
+        return storesSellingTheProduct.size();
+    }
+
+    public float averagePriceOfProduct(){
+        float overallPrice = 0;
+        float avgPrice = 0;
+
+        if(numberOfStoresSellingTheProduct() != 0) {
+            for (Store store : storesSellingTheProduct) {
+                ProductInStore productInStore = store.getProductInStore(productSerialNumber);
+                if (productInStore != null) {
+                    overallPrice += productInStore.getPrice();
+                }
+            }
+            avgPrice = overallPrice / numberOfStoresSellingTheProduct();
+        }
+
+        return avgPrice;
+    }
+
+    public float getAmountSoldInAllStores() {
+        return amountSoldInAllStores;
+    }
+
+    public void addStore(Store store){
+        storesSellingTheProduct.add(store);
     }
 }

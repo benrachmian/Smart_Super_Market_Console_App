@@ -111,4 +111,8 @@ public class SDMSystem {
     public Map<Point, Store> getStoresInSystemByLocation(){
         return storesInSystem.getStoresInSystemByLocation();
     }
+
+    public Map<Integer, Product> getProductsInSystem() {
+        return productsInSystem;
+    }
 }

@@ -2,13 +2,13 @@ package SDMSystem.product;
 
 public class ProductInStore extends Product {
     private float price;
-    private float amountSold;
+    private float amountSoldInStore;
 
 
     public ProductInStore(String productName, WayOfBuying wayOfBuying, float price) {
         super(productName, wayOfBuying);
         this.price = price;
-        this.amountSold = 0;
+        this.amountSoldInStore = 0;
     }
 
     public ProductInStore(Product newProduct, float price) {
@@ -20,14 +20,14 @@ public class ProductInStore extends Product {
         return price;
     }
 
-    public float getAmountSold() {
-        return amountSold;
+    public float getAmountSoldInStore() {
+        return amountSoldInStore;
     }
 
     @Override
     public String toString() {
         return super.toString() +
                 "\nPrice: " + price +
-                "\nAmount sold: " + amountSold;
+                "\nAmount sold: " + amountSoldInStore + "\n";
     }
 }
