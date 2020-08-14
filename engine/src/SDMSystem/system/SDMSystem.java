@@ -128,6 +128,10 @@ public class SDMSystem {
         return storesInSystem.getStoresInSystemBySerialNumber();
     }
 
+    public Store getStoreFromStores(int storeSerialNumber){
+        return storesInSystem.getStoresInSystemBySerialNumber().get(storeSerialNumber);
+    }
+
     public Map<Point, Store> getStoresInSystemByLocation(){
         return storesInSystem.getStoresInSystemByLocation();
     }

@@ -29,6 +29,29 @@ public class Validation {
         return choice;
     }
 
+    public static int getValidPositiveInteger(){
+        Scanner s = new Scanner(System.in);
+        int res = 0;
+        boolean succeeded = false;
+        while(!succeeded){
+            try{
+                res = s.nextInt();
+                if(res > 0){
+                    succeeded = true;
+                }
+                else{
+                    System.out.println("You must enter a positive number!");
+                }
+            }
+            catch (InputMismatchException ex){
+                System.out.println("You must enter an integer!");
+                s.nextLine();
+            }
+        }
+
+        return res;
+    }
+
     public static boolean checkIfLocationInRange(int x, int y, int minCoordinate, int maxCoordinate) {
         boolean inRange = true;
         if (!isInRange(x, minCoordinate, maxCoordinate)) {
@@ -45,5 +68,45 @@ public class Validation {
 
     private static boolean isInRange(int target, int min, int max){
         return target >= min && target <= max;
+    }
+
+    public static float getValidPositiveNumber() {
+        Scanner s = new Scanner(System.in);
+        float res = 0;
+        boolean succeeded = false;
+        while(!succeeded){
+            try{
+                res = s.nextFloat();
+                if(res > 0){
+                    succeeded = true;
+                }
+                else{
+                    System.out.println("You must enter a positive number!");
+                }
+            }
+            catch (InputMismatchException ex){
+                System.out.println("You must enter a float number!");
+                s.nextLine();
+            }
+        }
+
+        return res;
+    }
+
+    public static boolean getValidYesOrNoAnswer() {
+        Scanner s = new Scanner(System.in);
+        char answer = 0;
+        boolean validAnswer = false;
+        while(!validAnswer) {
+            answer = s.next().charAt(0);
+            if (answer == 'Y' || answer == 'y' || answer == 'N' || answer == 'n'){
+                validAnswer = true;
+            }
+            else{
+                System.out.println("You must enter Y or N!");
+            }
+        }
+
+        return answer == 'Y' || answer == 'y';
     }
 }

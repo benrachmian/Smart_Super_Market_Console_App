@@ -1,9 +1,12 @@
 package SDMConsole;
 
+import SDMSystem.exceptions.ExistenceException;
 import SDMSystem.product.Product;
 import SDMSystem.product.ProductInStore;
+import SDMSystem.store.Order;
 import SDMSystem.system.SDMSystem;
 import SDMSystem.store.Store;
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 import xml.XMLHelper;
 
 import javax.xml.bind.JAXBException;
@@ -11,10 +14,7 @@ import java.awt.*;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.InputMismatchException;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class SDMConsole {
     private SDMSystem sdmSystem;
@@ -62,7 +62,7 @@ public class SDMConsole {
                     }
                 }
             } else {
-                if(loadFileToSystem()){
+                if(loadFileToSystem()){ //option 1
                     fileLoaded = true;
                     System.out.println("File loaded successfully!");
                 }
@@ -74,41 +74,90 @@ public class SDMConsole {
 
     private void makeOrder() {
         Scanner s = new Scanner(System.in);
+        Order orderInProgress = new Order();
+        //Collection<ProductInStore> productsInOrder = new LinkedList<>();
+        boolean succeeded = false;
         printAllStoresIdNamePpk();
-        try {
-            System.out.println("Please choose a store by entering its serial number: ");
-            int chosenStoreSerialNumber = s.nextInt();
-            Store chosenStore = sdmSystem.getStoresInSystemBySerialNumber().get(chosenStoreSerialNumber);
-            if (chosenStore != null) {
-                Date orderDate = getOrderDateFromUser();
-                Point userLocation = getLocationFromTheUser(chosenStore.getLocation());
-                if (userLocation != null) {
-                    printAllProductsForOrderFromStore(chosenStore);
-                    chooseProductAndBuy(chosenStore);
+        do {
+            try {
+                System.out.println("Please choose a store by entering its serial number: ");
+                int chosenStoreSerialNumber = s.nextInt();
+                Store chosenStore = sdmSystem.getStoreFromStores(chosenStoreSerialNumber);
+                if (chosenStore != null) {
+                    orderInProgress.setOrderDate(getOrderDateFromUser());
+                    Point userLocation = getLocationFromTheUser(chosenStore.getLocation());
+                    if (userLocation != null) {
+                        printAllProductsForOrderFromStore(chosenStore);
+                        chooseProductAndBuy(chosenStore, orderInProgress);
+                        succeeded = true;
+                    }
+                } else {
+                    System.out.println("No such store in the system! Please try again!");
                 }
-            } else {
-                System.out.println("No such store in the system!");
+            } catch (InputMismatchException e) {
+                System.out.println("You must enter an integer!");
+                s.nextLine();
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                s.nextLine();
             }
         }
-        catch(InputMismatchException e){
-            System.out.println("You must enter an integer!");
-        }
-        catch (Exception e){
-            System.out.println(e.getMessage());
-        }
+        while(!succeeded);
 
 
     }
 
-    private void chooseProductAndBuy(Store chosenStore) {
+    private void chooseProductAndBuy(Store chosenStore, Order orderInProgress) {
         Scanner s = new Scanner(System.in);
-        System.out.println("Choose a product by entering its serial number");
-        int chosenProductSerialNumber = s.nextInt();
-        ProductInStore chosenProduct = chosenStore.getProductInStore(chosenProductSerialNumber);
+        float amountToBuy;
+        boolean finished = false;
+        while(!finished) {
+            try {
+                System.out.println("Choose a product by entering its serial number");
+                int chosenProductSerialNumber = s.nextInt();
+                ProductInStore chosenProduct = chosenStore.getProductInStore(chosenProductSerialNumber);
+                amountToBuy = getAmountToBuy(chosenProduct);
+                orderInProgress.addProductToOrder(chosenProduct);
+                finished = !askIfFinishedOrdering();
+                if(!finished && askIfShowProductsAgain()){
+                    printAllProductsForOrderFromStore(chosenStore);
+                }
+            } catch (ExistenceException ex) {
+                System.out.println(ex.getMessage());
+            } catch (InputMismatchException ex){
+                System.out.println("You must enter an integer!");
+                s.nextLine();
+            }
+        }
 
+    }
+
+    private boolean askIfShowProductsAgain() {
+        System.out.println("Would you like to view the products in the store again?");
+        return Validation.getValidYesOrNoAnswer();
+    }
+
+    private boolean askIfFinishedOrdering() {
+        System.out.println("Would you like to order another product? insert Y\\N");
+        return Validation.getValidYesOrNoAnswer();
+    }
+
+    private float getAmountToBuy(ProductInStore chosenProduct) {
+        float amountToBuy;
+        if(chosenProduct.getWayOfBuying() == Product.WayOfBuying.BY_QUANTITY){
+            System.out.println("Please enter the number of units you would like to buy:");
+            amountToBuy = Validation.getValidPositiveInteger();
+        }
+        else{ //by weight
+            System.out.println("Please enter how many kilos you would like to buy:");
+            amountToBuy = Validation.getValidPositiveNumber();
+        }
+
+        return amountToBuy;
     }
 
     private void printAllProductsForOrderFromStore(Store chosenStore) {
+        System.out.println("The products from store " + chosenStore.getSerialNumber() + ":");
         ProductInStore productInChosenStore;
         for(Product product : sdmSystem.getProductsInSystem().values()){
             System.out.println("-------------------------------------------------------------------");
@@ -123,7 +172,7 @@ public class SDMConsole {
             else{
                 System.out.println(chosenStore.getProductInStore(product.getSerialNumber()).getPrice());
             }
-
+            System.out.println("-------------------------------------------------------------------");
         }
     }
 
@@ -131,29 +180,49 @@ public class SDMConsole {
         Scanner s = new Scanner(System.in);
         int x,y;
         Point userLocation = null;
-        System.out.println("Please enter your location using coordinates x,y.");
-        System.out.print("x: ");
-        x = s.nextInt();
-        System.out.print("y: ");
-        y = s.nextInt();
-        if(Validation.checkIfLocationInRange(x,y,SDMSystem.MIN_COORDINATE,SDMSystem.MAX_COORDINATE)){
-            if(!(x==storeLocation.x && y==storeLocation.y)){
-                userLocation = new Point(x,y);
-            }
-            else{
-                System.out.println("The location can't be the same as the store location!");
+        boolean succeeded = false;
+        do {
+            try {
+                System.out.println("Please enter your location using coordinates x,y.");
+                System.out.print("x: ");
+                x = s.nextInt();
+                System.out.print("y: ");
+                y = s.nextInt();
+                if (Validation.checkIfLocationInRange(x, y, SDMSystem.MIN_COORDINATE, SDMSystem.MAX_COORDINATE)) {
+                    if (!(x == storeLocation.x && y == storeLocation.y)) {
+                        userLocation = new Point(x, y);
+                        succeeded = true;
+                    } else {
+                        System.out.println("The location can't be the same as the store location!");
+                    }
+                }
+            } catch (InputMismatchException ex) {
+                System.out.println("You must enter in integer!");
+                s.nextLine();
             }
         }
+        while(!succeeded);
+
         return userLocation;
     }
 
     private Date getOrderDateFromUser() throws ParseException {
-        Date orderDate;
+        boolean succeeded = false;
+        Date orderDate = null;
         Scanner s = new Scanner(System.in);
         SimpleDateFormat format = new SimpleDateFormat("dd/MM-hh:mm");
-        System.out.println("Please enter the order date in this format: dd/MM-hh:mm");
-        String dateInput = s.nextLine();
-        orderDate = format.parse(dateInput);
+        do {
+            try {
+                System.out.println("Please enter the order date in this format: dd/MM-hh:mm");
+                String dateInput = s.nextLine();
+                orderDate = format.parse(dateInput);
+                succeeded = true;
+            } catch (ParseException ex) {
+                System.out.println("You must enter the date in the correct format!");
+            }
+        }
+        while(!succeeded);
+
         return orderDate;
     }
 
