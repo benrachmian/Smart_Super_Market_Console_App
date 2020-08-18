@@ -14,13 +14,20 @@ public class Order {
     private float productsCost;
     private float deliveryCost;
 
-    public Order(){
-        this.orderDate = null;
-        this.productsInOrder = new LinkedList<>();
-        //this.whoOrdered = null;
-        this.productsCost = 0;
-        this.deliveryCost = 0;
+    public Order(Date orderDate, Collection<ProductInStore> productsInOrder, float productsCost, float deliveryCost) {
+        this.orderDate = orderDate;
+        this.productsInOrder = productsInOrder;
+        this.productsCost = productsCost;
+        this.deliveryCost = deliveryCost;
     }
+
+//    public Order(){
+//        this.orderDate = null;
+//        this.productsInOrder = new LinkedList<>();
+//        //this.whoOrdered = null;
+//        this.productsCost = 0;
+//        this.deliveryCost = 0;
+//    }
 
     public Order(Date orderDate, /*Customer whoOrdered*/ float deliveryCost) {
         this.orderDate = orderDate;
@@ -43,12 +50,26 @@ public class Order {
         productsCost += product.getPrice();
     }
 
-    @Override
-    public String toString() {
-        return "Order Date=" + orderDate.toString() +
-                "\nNumber of products: " + productsInOrder.size() +
-                "\nProducts cost: " + productsCost +
-                "\nDelivery cost: " + deliveryCost +
-                "\nOrder cost: " + (productsCost + deliveryCost);
+
+
+//    @Override
+//    public String toString() {
+//        return "Order Date=" + orderDate.toString() +
+//                "\nNumber of products: " + productsInOrder.size() +
+//                "\nProducts cost: " + productsCost +
+//                "\nDelivery cost: " + deliveryCost +
+//                "\nOrder cost: " + (productsCost + deliveryCost);
+//    }
+
+    public float getDeliveryCost() {
+        return deliveryCost;
+    }
+
+    public float getProductsCost() {
+        return productsCost;
+    }
+
+    public Collection<ProductInStore> getProductsInOrder() {
+        return productsInOrder;
     }
 }

@@ -2,6 +2,7 @@ package SDMSystem.system;
 
 import SDMSystem.store.Store;
 import SDMSystem.exceptions.*;
+import SDMSystemDTO.store.DTOStore;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -28,11 +29,45 @@ class StoresInSystem {
         }
     }
 
+    public Map<Integer, DTOStore> getDTOStoresInSystemBySerialNumber() {
+        Map<Integer, DTOStore> storesInSystemBySerialNumber = new HashMap<>();
+        for(Store store : this.storesInSystemBySerialNumber.values()){
+            DTOStore newDTOStore = store.createDTOStore();
+            storesInSystemBySerialNumber.put(newDTOStore.getStoreSerialNumber(),newDTOStore);
+        }
+        return storesInSystemBySerialNumber;
+    }
+
+//    private DTOStore createDTOStoreFromStore(Store store) {
+//        DTOStore newDTOStore = new DTOStore(
+//                store.getDTOProductsInStore(),
+//                store.getLocation(),
+//                store.getPpk(),
+//                store.getSerialNumber(),
+//                store.getStoreName(),
+//                store.getDTOOrdersFromStore(),
+//                store.getTotalProfitFromDelivary());
+//        return newDTOStore;
+//    }
+
     public Map<Integer, Store> getStoresInSystemBySerialNumber() {
         return storesInSystemBySerialNumber;
     }
 
     public Map<Point, Store> getStoresInSystemByLocation() {
         return storesInSystemByLocation;
+    }
+
+    public Map<Point, DTOStore> getDTOStoresInSystemByLocation() {
+        Map<Point, DTOStore> storesInSystemByLocation = new HashMap<>();
+        for(Store store : this.storesInSystemByLocation.values()){
+            DTOStore newDTOStore = store.createDTOStore();
+            storesInSystemByLocation.put(newDTOStore.getStoreLocation(),newDTOStore);
+        }
+        return storesInSystemByLocation;
+    }
+
+    public Store getStoreInSystem(int storeSerialNumber) {
+        return storesInSystemBySerialNumber.get(storeSerialNumber);
     }
 }

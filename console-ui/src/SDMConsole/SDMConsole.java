@@ -6,7 +6,13 @@ import SDMSystem.product.ProductInStore;
 import SDMSystem.store.Order;
 import SDMSystem.system.SDMSystem;
 import SDMSystem.store.Store;
+import SDMSystemDTO.product.DTOProduct;
+import SDMSystemDTO.product.DTOProductInStore;
+import SDMSystemDTO.product.WayOfBuying;
+import SDMSystemDTO.store.DTOOrder;
+import SDMSystemDTO.store.DTOStore;
 import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
+import javafx.util.Pair;
 import xml.XMLHelper;
 
 import javax.xml.bind.JAXBException;
@@ -42,7 +48,7 @@ public class SDMConsole {
 
     public void startApp() {
         printOpeningMenu();
-        int choose = Validation.getValidChoice(MIN_CHOOSE,MAX_CHOOSE);
+        int choose = Validation.getValidChoice(MIN_CHOOSE, MAX_CHOOSE);
 
         while (choose != EXIT) {
             if (choose != 1) {
@@ -62,33 +68,34 @@ public class SDMConsole {
                     }
                 }
             } else {
-                if(loadFileToSystem()){ //option 1
+                if (loadFileToSystem()) { //option 1
                     fileLoaded = true;
                     System.out.println("File loaded successfully!");
                 }
             }
             printOpeningMenu();
-            choose = Validation.getValidChoice(MIN_CHOOSE,MAX_CHOOSE);
+            choose = Validation.getValidChoice(MIN_CHOOSE, MAX_CHOOSE);
         }
     }
 
     private void makeOrder() {
         Scanner s = new Scanner(System.in);
-        Order orderInProgress = new Order();
-        //Collection<ProductInStore> productsInOrder = new LinkedList<>();
+        //Pair: amount,product
+        Collection<Pair<Float,DTOProductInStore>> productsInOrder = new LinkedList<>();
         boolean succeeded = false;
         printAllStoresIdNamePpk();
         do {
             try {
                 System.out.println("Please choose a store by entering its serial number: ");
                 int chosenStoreSerialNumber = s.nextInt();
-                Store chosenStore = sdmSystem.getStoreFromStores(chosenStoreSerialNumber);
+                DTOStore chosenStore = sdmSystem.getStoreFromStores(chosenStoreSerialNumber);
                 if (chosenStore != null) {
-                    orderInProgress.setOrderDate(getOrderDateFromUser());
-                    Point userLocation = getLocationFromTheUser(chosenStore.getLocation());
+                    Date orderDate = getOrderDateFromUser();
+                    Point userLocation = getLocationFromTheUser(chosenStore.getStoreLocation());
                     if (userLocation != null) {
                         printAllProductsForOrderFromStore(chosenStore);
-                        chooseProductAndBuy(chosenStore, orderInProgress);
+                        chooseProductAndBuy(chosenStore, productsInOrder);
+                        sdmSystem.makeNewOrder(chosenStore, orderDate, userLocation, productsInOrder);
                         succeeded = true;
                     }
                 } else {
@@ -102,29 +109,29 @@ public class SDMConsole {
                 s.nextLine();
             }
         }
-        while(!succeeded);
+        while (!succeeded);
 
 
     }
 
-    private void chooseProductAndBuy(Store chosenStore, Order orderInProgress) {
+    private void chooseProductAndBuy(DTOStore chosenStore,  Collection<Pair<Float,DTOProductInStore>> productsInOrder) {
         Scanner s = new Scanner(System.in);
         float amountToBuy;
         boolean finished = false;
-        while(!finished) {
+        while (!finished) {
             try {
                 System.out.println("Choose a product by entering its serial number");
                 int chosenProductSerialNumber = s.nextInt();
-                ProductInStore chosenProduct = chosenStore.getProductInStore(chosenProductSerialNumber);
-                amountToBuy = getAmountToBuy(chosenProduct);
-                orderInProgress.addProductToOrder(chosenProduct);
+                DTOProductInStore chosenProduct = sdmSystem.getProductFromStore(chosenProductSerialNumber, chosenStore.getStoreSerialNumber());
+                amountToBuy =  getAmountToBuy(chosenProduct);
+                productsInOrder.add(new Pair<Float,DTOProductInStore>(amountToBuy,chosenProduct));
                 finished = !askIfFinishedOrdering();
-                if(!finished && askIfShowProductsAgain()){
+                if (!finished && askIfShowProductsAgain()) {
                     printAllProductsForOrderFromStore(chosenStore);
                 }
             } catch (ExistenceException ex) {
                 System.out.println(ex.getMessage());
-            } catch (InputMismatchException ex){
+            } catch (InputMismatchException ex) {
                 System.out.println("You must enter an integer!");
                 s.nextLine();
             }
@@ -133,7 +140,7 @@ public class SDMConsole {
     }
 
     private boolean askIfShowProductsAgain() {
-        System.out.println("Would you like to view the products in the store again?");
+        System.out.println("Would you like to view the products in the store again? insert Y\\N");
         return Validation.getValidYesOrNoAnswer();
     }
 
@@ -142,13 +149,12 @@ public class SDMConsole {
         return Validation.getValidYesOrNoAnswer();
     }
 
-    private float getAmountToBuy(ProductInStore chosenProduct) {
+    private float getAmountToBuy(DTOProductInStore chosenProduct) {
         float amountToBuy;
-        if(chosenProduct.getWayOfBuying() == Product.WayOfBuying.BY_QUANTITY){
+        if (chosenProduct.getWayOfBuying() == WayOfBuying.BY_QUANTITY) {
             System.out.println("Please enter the number of units you would like to buy:");
             amountToBuy = Validation.getValidPositiveInteger();
-        }
-        else{ //by weight
+        } else { //by weight
             System.out.println("Please enter how many kilos you would like to buy:");
             amountToBuy = Validation.getValidPositiveNumber();
         }
@@ -156,24 +162,25 @@ public class SDMConsole {
         return amountToBuy;
     }
 
-    private void printAllProductsForOrderFromStore(Store chosenStore) {
-        System.out.println("The products from store " + chosenStore.getSerialNumber() + ":");
+    private void printAllProductsForOrderFromStore(DTOStore chosenStore) {
+        System.out.println("The products from store " + chosenStore.getStoreSerialNumber() + ":");
         ProductInStore productInChosenStore;
-        for(Product product : sdmSystem.getProductsInSystem().values()){
+        for (DTOProduct product : sdmSystem.getProductsInSystem().values()) {
             System.out.println("-------------------------------------------------------------------");
-            System.out.println("Product serial number: " + product.getSerialNumber());
+            System.out.println("Product serial number: " + product.getProductSerialNumber());
             System.out.println("Product name: " + product.getProductName());
             System.out.println("Way of buying: " + product.getWayOfBuying());
             System.out.print("Price: ");
-            //productInChosenStore = chosenStore.getProductInStore(product.getSerialNumber());
-            if(!chosenStore.isAvailableInStore(product.getSerialNumber())){
+            //if(!chosenStore.isAvailableInStore(product.getSerialNumber())){
+            if (!sdmSystem.isAvailableInStore(chosenStore.getStoreSerialNumber(), product.getProductSerialNumber())) {
                 System.out.println("The product is not available in that store!");
-            }
-            else{
-                System.out.println(chosenStore.getProductInStore(product.getSerialNumber()).getPrice());
+            } else {
+                //System.out.println(chosenStore.getProductInStore(product.getSerialNumber()).getPrice());
+                System.out.println(sdmSystem.getProductPrice(chosenStore.getStoreSerialNumber(),product.getProductSerialNumber()));
             }
             System.out.println("-------------------------------------------------------------------");
         }
+
     }
 
     private Point getLocationFromTheUser(Point storeLocation) {
@@ -206,7 +213,7 @@ public class SDMConsole {
         return userLocation;
     }
 
-    private Date getOrderDateFromUser() throws ParseException {
+    private Date getOrderDateFromUser()  {
         boolean succeeded = false;
         Date orderDate = null;
         Scanner s = new Scanner(System.in);
@@ -227,11 +234,11 @@ public class SDMConsole {
     }
 
     private void printAllStoresIdNamePpk() {
-        Map<Integer, Store> storesInSystem = sdmSystem.getStoresInSystemBySerialNumber();
+        Map<Integer, DTOStore> storesInSystem = sdmSystem.getStoresInSystemBySerialNumber();
         System.out.println("The stores in the system are:");
-        for(Store store : storesInSystem.values()){
+        for(DTOStore store : storesInSystem.values()){
             System.out.println("-------------------------------------------------------------------");
-            System.out.println("Store serial number: " + store.getSerialNumber());
+            System.out.println("Store serial number: " + store.getStoreSerialNumber());
             System.out.println("Store name: " + store.getStoreName());
             System.out.println("Store PPK: " + store.getPpk());
         }
@@ -263,27 +270,77 @@ public class SDMConsole {
 
 
     private void printAllStoresAndTheirProducts() {
-        Map<Integer, Store> storesInSystem = sdmSystem.getStoresInSystemBySerialNumber();
-        for (Store store : storesInSystem.values()) {
+        Map<Integer, DTOStore> storesInSystem = sdmSystem.getStoresInSystemBySerialNumber();
+        for (DTOStore dtoStore : storesInSystem.values()) {
             System.out.println("-------------------------------------------------------------------");
-            System.out.println(store.toString());
+            printDTOStoreAndItsProducts(dtoStore);
             System.out.println("-------------------------------------------------------------------");
         }
     }
 
+    private void printDTOStoreAndItsProducts(DTOStore dtoStore) {
+        System.out.println("Store ID: " + dtoStore.getStoreSerialNumber() +
+            "\nStore name: " + dtoStore.getStoreName() +
+            "\nProducts in store:\n");
+        printDTOProductsInStore(dtoStore);
+        System.out.print("Orders history: ");
+        printDTOStoreOrderHistory(dtoStore);
+        System.out.print("PPK: " + dtoStore.getPpk());
+        System.out.println("\nTotal profit from delivery: " + dtoStore.getTotalProfitFromDelivery());
+    }
+
+    private void printDTOStoreOrderHistory(DTOStore dtoStore) {
+        if (dtoStore.getOrdersFromStore().size() != 0) {
+            for (DTOOrder order : dtoStore.getOrdersFromStore()) {
+                printDTOOrder(order);
+            }
+        } else {
+            System.out.println("There are no any orders yet!");
+        }
+    }
+
+    private void printDTOOrder(DTOOrder order) {
+        System.out.println("Order Date=" + order.getOrderDate().toString() +
+                "\nNumber of products: " + order.getProductsInOrder().size() +
+                "\nProducts cost: " + order.getProductsCost() +
+                "\nDelivery cost: " + order.getDeliveryCost() +
+                "\nOrder cost: " + (order.getProductsCost() + order.getDeliveryCost()));
+    }
+
+
+    private void printDTOProductsInStore(DTOStore dtoStore) {
+        for(DTOProductInStore dtoProductInStore : dtoStore.getProductsInStore().values()) {
+            printProductInStore(dtoProductInStore);
+        }
+    }
+
+    private void printProductInStore(DTOProductInStore dtoProductInStore) {
+        printProduct(dtoProductInStore);
+        System.out.println("Price: " + dtoProductInStore.getPrice() +
+                "\nAmount sold: " + dtoProductInStore.getAmountSoldInStore() + "\n");
+    }
+
+    private void printProduct(DTOProduct dtoProduct) {
+        System.out.println("Product serial number: " + dtoProduct.getProductSerialNumber() +
+                "\nProduct name: " + dtoProduct.getProductName() +
+                "\nWay of buying: " + dtoProduct.getWayOfBuying());
+    }
+
+
     private void printAllProducts() {
-        Map<Integer, Product> productsInSystem = sdmSystem.getProductsInSystem();
-        for (Product product : productsInSystem.values()) {
+        Map<Integer, DTOProduct> productsInSystem = sdmSystem.getProductsInSystem();
+        for (DTOProduct product : productsInSystem.values()) {
             System.out.println("-------------------------------------------------------------------");
-            System.out.println(product.toString());
-            System.out.println("Number of store selling the product: " + product.numberOfStoresSellingTheProduct());
+            printProduct(product);
+            System.out.println("Number of store selling the product: " + sdmSystem.getNumberOfStoresSellingProduct(product.getProductSerialNumber()));
             System.out.print("Average price: ");
 
-            if(product.numberOfStoresSellingTheProduct() == 0){
+            if(sdmSystem.getNumberOfStoresSellingProduct(product.getProductSerialNumber()) == 0){
                 System.out.println( "There are no stores selling the product! ");
             }
             else{
-                System.out.println(product.averagePriceOfProduct());
+                //System.out.println(product.averagePriceOfProduct());
+                System.out.println(sdmSystem.getAveragePriceOfProduct(product.getProductSerialNumber()));
             }
             System.out.println("Amount sold in all stores: " + product.getAmountSoldInAllStores());
             System.out.println("-------------------------------------------------------------------");

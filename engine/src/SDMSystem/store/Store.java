@@ -6,11 +6,13 @@ import SDMSystem.location.Locationable;
 import SDMSystem.product.Product;
 import SDMSystem.product.ProductInStore;
 import SDMSystem.exceptions.*;
+import SDMSystemDTO.product.DTOProductInStore;
+import SDMSystemDTO.store.DTOOrder;
+import SDMSystemDTO.store.DTOStore;
+import javafx.util.Pair;
+
 import java.awt.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 public class Store implements Locationable, HasSerialNumber<Integer> {
 
@@ -89,12 +91,12 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
     }
 
     @Override
-    public double getDistanceFrom(Point target) {
+    public float getDistanceFrom(Point target) {
         int a = Math.abs(target.x - this.storeLocation.x);
         int b = Math.abs(target.y - this.storeLocation.y);
         double aPower2 = Math.pow(a, 2);
         double bPower2 = Math.pow(b, 2);
-        return Math.sqrt(aPower2 + bPower2);
+        return (float) Math.sqrt(aPower2 + bPower2);
     }
 
     @Override
@@ -102,36 +104,120 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
         return storeSerialNumber;
     }
 
-    @Override
-    public String toString() {
-        return "Store ID: " + storeSerialNumber +
-                "\nStore name: " + storeName +
-                "\nProducts in store:\n\n" + productsInStoreToSting() +
-                "\nOrders history: " + ordersToString() +
-                "\nPPK: " + ppk +
-                "\nTotal profit from delivery: " + totalProfitFromDelivery;
+//    @Override
+//    public String toString() {
+//        return "Store ID: " + storeSerialNumber +
+//                "\nStore name: " + storeName +
+//                "\nProducts in store:\n\n" + productsInStoreToSting() +
+//                "\nOrders history: " + ordersToString() +
+//                "\nPPK: " + ppk +
+//                "\nTotal profit from delivery: " + totalProfitFromDelivery;
+//    }
+
+//    private String ordersToString() {
+//        String res = "";
+//        if (ordersFromStore.size() != 0) {
+//            for (Order order : ordersFromStore) {
+//                res = res.concat(order.toString());
+//            }
+//        }
+//        else{
+//            res = res.concat("There are no any orders yet!");
+//        }
+//
+//        return res;
+//    }
+
+//    private String productsInStoreToSting() {
+//        String res = "";
+//        for(ProductInStore productInStore : productsInStore.values()){
+//            res = res.concat(productInStore.toString() + "\n");
+//        }
+//
+//        return res;
+//    }
+
+    public Map<Integer, DTOProductInStore> getDTOProductsInStore() {
+        Map<Integer, DTOProductInStore> DTOProductsInStore = new HashMap<>();
+        for(ProductInStore productInStore : this.productsInStore.values()){
+            DTOProductInStore newProduct = productInStore.createDTOProductInStore();
+            DTOProductsInStore.put(newProduct.getProductSerialNumber(),newProduct);
+        }
+        return DTOProductsInStore;
     }
 
-    private String ordersToString() {
-        String res = "";
-        if (ordersFromStore.size() != 0) {
-            for (Order order : ordersFromStore) {
-                res = res.concat(order.toString());
-            }
-        }
-        else{
-            res = res.concat("There are no any orders yet!");
-        }
+//    private DTOProductInStore createDTOProductInStoreFromProductInStore(ProductInStore productInStore) {
+//        DTOProductInStore newDTOProductInStore = new DTOProductInStore(
+//                productInStore.getSerialNumber(),
+//                productInStore.getProductName(),
+//                productInStore.getWayOfBuying(),
+//                productInStore.getAmountSoldInAllStores(),
+//                productInStore.getPrice(),
+//                productInStore.getAmountSoldInStore());
+//        return newDTOProductInStore;
+//    }
 
-        return res;
+    public DTOStore createDTOStore() {
+        DTOStore newDTOStore = new DTOStore(
+                getDTOProductsInStore(),
+                storeLocation,
+                ppk,
+                storeSerialNumber,
+                storeName,
+                getDTOOrdersFromStore(),
+                totalProfitFromDelivery);
+        return newDTOStore;
     }
 
-    private String productsInStoreToSting() {
-        String res = "";
-        for(ProductInStore productInStore : productsInStore.values()){
-            res = res.concat(productInStore.toString() + "\n");
+
+
+    public float getTotalProfitFromDelivary() {
+        return totalProfitFromDelivery;
+    }
+
+    public Collection<DTOOrder> getDTOOrdersFromStore() {
+        Collection<DTOOrder> dtoOrders = new LinkedList<>();
+        for(Order order : ordersFromStore){
+            DTOOrder newDTOOrder = new DTOOrder(
+                    order.getOrderDate(),
+                    createDTOProductInStoreCollection(order.getProductsInOrder()),
+                    order.getProductsCost(),
+                    order.getDeliveryCost());
+            dtoOrders.add(newDTOOrder);
         }
 
-        return res;
+        return dtoOrders;
+    }
+
+    private Collection<DTOProductInStore> createDTOProductInStoreCollection(Collection<ProductInStore> productsCollection) {
+        Collection<DTOProductInStore> dtoProductInStoreCollection = new LinkedList();
+        for (ProductInStore productInStore : productsCollection){
+            DTOProductInStore dtoProductInStore = productInStore.createDTOProductInStore();
+            dtoProductInStoreCollection.add(dtoProductInStore);
+        }
+
+        return dtoProductInStoreCollection;
+    }
+
+    public void makeNewOrder(Date orderDate, Point userLocation, Collection<Pair<Float,DTOProductInStore>> dtoProductsInOrder) {
+        Collection<ProductInStore> productsInOrder = new LinkedList<>();
+        for(Pair<Float, DTOProductInStore> dtoProductInOrder : dtoProductsInOrder){
+            ProductInStore productInStore = productsInStore.get(dtoProductInOrder.getValue().getProductSerialNumber());
+            productInStore.increaseAmountSoldInStore(dtoProductInOrder.getKey());
+            //productInStore.increaseAmountSoldInAllStores(dtoProductInOrder.getKey());
+            productsInOrder.add(productInStore);
+        }
+        float productsCost = calcProductsCost(productsInOrder);
+        float deliveryCost = this.getDistanceFrom(userLocation) * ppk;
+        ordersFromStore.add(new Order(orderDate,productsInOrder,productsCost,deliveryCost));
+    }
+
+    private float calcProductsCost(Collection<ProductInStore> productsInOrder) {
+        float totalCost = 0;
+        for(ProductInStore productInOrder : productsInOrder){
+            totalCost += productInOrder.getPrice();
+        }
+
+        return totalCost;
     }
 }
