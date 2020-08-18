@@ -81,7 +81,7 @@ public class SDMConsole {
     private void makeOrder() {
         Scanner s = new Scanner(System.in);
         //Pair: amount,product
-        Collection<Pair<Float,DTOProductInStore>> productsInOrder = new LinkedList<>();
+        Collection<Pair<Float, DTOProductInStore>> productsInOrder = new LinkedList<>();
         boolean succeeded = false;
         float deliveryCost = 0;
         printAllStoresIdNamePpk();
@@ -92,18 +92,21 @@ public class SDMConsole {
                 DTOStore chosenStore = sdmSystem.getStoreFromStores(chosenStoreSerialNumber);
                 if (chosenStore != null) {
                     Date orderDate = getOrderDateFromUser();
-                    Point userLocation =  getLocationFromTheUser(chosenStore.getStoreLocation());
-                    if (userLocation != null) {
-                        deliveryCost = sdmSystem.getDeliveryCost(chosenStore, userLocation);
-                        printAllProductsForOrderFromStore(chosenStore);
-                        chooseProductAndBuy(chosenStore, productsInOrder);
+                    Point userLocation = getLocationFromTheUser(chosenStore.getStoreLocation());
+                    //if (userLocation != null) {
+                    deliveryCost = sdmSystem.getDeliveryCost(chosenStore, userLocation);
+                    printAllProductsForOrderFromStore(chosenStore);
+                    chooseProductAndBuy(chosenStore, productsInOrder);
+                    if (productsInOrder.size() >= 1) {
                         showSummeryOfOrder(chosenStore, productsInOrder, deliveryCost, userLocation);
-                        if(askIfConfirmOrder()) {
+                        if (askIfConfirmOrder()) {
                             sdmSystem.makeNewOrder(chosenStore, orderDate, deliveryCost, productsInOrder);
                             System.out.println("The order was made successfully!");
                         }
-                            succeeded = true;
                     }
+                    succeeded = true;
+
+                    // }
                 } else {
                     System.out.println("No such store in the system! Please try again!");
                 }
@@ -116,8 +119,6 @@ public class SDMConsole {
             }
         }
         while (!succeeded);
-
-
     }
 
     private boolean askIfConfirmOrder() {
@@ -262,12 +263,13 @@ public class SDMConsole {
         boolean succeeded = false;
         Date orderDate = null;
         Scanner s = new Scanner(System.in);
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM-hh:mm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM-hh:mm");
+        dateFormat.setLenient(false);
         do {
             try {
                 System.out.println("Please enter the order date in this format: dd/MM-hh:mm");
                 String dateInput = s.nextLine();
-                orderDate = format.parse(dateInput);
+                orderDate = dateFormat.parse(dateInput);
                 succeeded = true;
             } catch (ParseException ex) {
                 System.out.println("You must enter the date in the correct format!");

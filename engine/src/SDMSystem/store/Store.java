@@ -224,4 +224,8 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
     public float getDeliveryCost(Point locationFromTheUser) {
         return this.getDistanceFrom(locationFromTheUser) * ppk;
     }
+
+    public void increaseTotalProfitFromDelivery(float deliveryCost) {
+        totalProfitFromDelivery += deliveryCost;
+    }
 }

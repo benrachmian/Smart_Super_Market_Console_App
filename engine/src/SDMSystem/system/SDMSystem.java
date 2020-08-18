@@ -173,6 +173,7 @@ public class SDMSystem {
         Store storeWithNewOrder = storesInSystem.getStoreInSystem(chosenStore.getStoreSerialNumber());
         storeWithNewOrder.makeNewOrder(orderDate,deliveryCost,productsInOrder);
         updateAmountsSold(productsInOrder);
+        storeWithNewOrder.increaseTotalProfitFromDelivery(deliveryCost);
     }
 
     private void updateAmountsSold(Collection<Pair<Float, DTOProductInStore>> productsInOrder) {
