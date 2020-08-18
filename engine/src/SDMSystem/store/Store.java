@@ -199,7 +199,7 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
         return dtoProductInStoreCollection;
     }
 
-    public void makeNewOrder(Date orderDate, Point userLocation, Collection<Pair<Float,DTOProductInStore>> dtoProductsInOrder) {
+    public void makeNewOrder(Date orderDate, float  deliveryCost, Collection<Pair<Float,DTOProductInStore>> dtoProductsInOrder) {
         Collection<ProductInStore> productsInOrder = new LinkedList<>();
         for(Pair<Float, DTOProductInStore> dtoProductInOrder : dtoProductsInOrder){
             ProductInStore productInStore = productsInStore.get(dtoProductInOrder.getValue().getProductSerialNumber());
@@ -208,7 +208,7 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
             productsInOrder.add(productInStore);
         }
         float productsCost = calcProductsCost(productsInOrder);
-        float deliveryCost = this.getDistanceFrom(userLocation) * ppk;
+        //float deliveryCost = getDeliveryCost()
         ordersFromStore.add(new Order(orderDate,productsInOrder,productsCost,deliveryCost));
     }
 
@@ -219,5 +219,9 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
         }
 
         return totalCost;
+    }
+
+    public float getDeliveryCost(Point locationFromTheUser) {
+        return this.getDistanceFrom(locationFromTheUser) * ppk;
     }
 }

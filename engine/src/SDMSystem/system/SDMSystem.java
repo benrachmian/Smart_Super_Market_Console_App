@@ -168,10 +168,10 @@ public class SDMSystem {
 
     public void makeNewOrder(DTOStore chosenStore,
                              Date orderDate,
-                             Point userLocation,
+                             float deliveryCost,
                              Collection<Pair<Float,DTOProductInStore>> productsInOrder) {
         Store storeWithNewOrder = storesInSystem.getStoreInSystem(chosenStore.getStoreSerialNumber());
-        storeWithNewOrder.makeNewOrder(orderDate,userLocation,productsInOrder);
+        storeWithNewOrder.makeNewOrder(orderDate,deliveryCost,productsInOrder);
         updateAmountsSold(productsInOrder);
     }
 
@@ -199,5 +199,15 @@ public class SDMSystem {
 
     public int getNumberOfStoresSellingProduct(int productSerialNumber) {
         return productsInSystem.get(productSerialNumber).numberOfStoresSellingTheProduct();
+    }
+
+    public float getDeliveryCost(DTOStore chosenStore, Point locationFromTheUser) {
+        Store store = storesInSystem.getStoreInSystem(chosenStore.getStoreSerialNumber());
+        return store.getDeliveryCost(locationFromTheUser);
+    }
+
+    public float getDistanceFromStore(DTOStore chosenStore, Point userLocation) {
+        Store store = storesInSystem.getStoreInSystem(chosenStore.getStoreSerialNumber());
+        return store.getDistanceFrom(userLocation);
     }
 }

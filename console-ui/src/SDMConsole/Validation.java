@@ -109,4 +109,8 @@ public class Validation {
 
         return answer == 'Y' || answer == 'y';
     }
+
+    public static boolean isQ(String input) {
+        return ((input.charAt(0) == 'Q' || input.charAt(0) == 'q') && input.length() == 1);
+    }
 }

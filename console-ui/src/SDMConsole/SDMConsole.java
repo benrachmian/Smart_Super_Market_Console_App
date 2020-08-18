@@ -83,6 +83,7 @@ public class SDMConsole {
         //Pair: amount,product
         Collection<Pair<Float,DTOProductInStore>> productsInOrder = new LinkedList<>();
         boolean succeeded = false;
+        float deliveryCost = 0;
         printAllStoresIdNamePpk();
         do {
             try {
@@ -91,12 +92,17 @@ public class SDMConsole {
                 DTOStore chosenStore = sdmSystem.getStoreFromStores(chosenStoreSerialNumber);
                 if (chosenStore != null) {
                     Date orderDate = getOrderDateFromUser();
-                    Point userLocation = getLocationFromTheUser(chosenStore.getStoreLocation());
+                    Point userLocation =  getLocationFromTheUser(chosenStore.getStoreLocation());
                     if (userLocation != null) {
+                        deliveryCost = sdmSystem.getDeliveryCost(chosenStore, userLocation);
                         printAllProductsForOrderFromStore(chosenStore);
                         chooseProductAndBuy(chosenStore, productsInOrder);
-                        sdmSystem.makeNewOrder(chosenStore, orderDate, userLocation, productsInOrder);
-                        succeeded = true;
+                        showSummeryOfOrder(chosenStore, productsInOrder, deliveryCost, userLocation);
+                        if(askIfConfirmOrder()) {
+                            sdmSystem.makeNewOrder(chosenStore, orderDate, deliveryCost, productsInOrder);
+                            System.out.println("The order was made successfully!");
+                        }
+                            succeeded = true;
                     }
                 } else {
                     System.out.println("No such store in the system! Please try again!");
@@ -114,26 +120,65 @@ public class SDMConsole {
 
     }
 
+    private boolean askIfConfirmOrder() {
+        System.out.println("Do you confirm the order? insert Y\\N");
+        return Validation.getValidYesOrNoAnswer();
+    }
+
+    private void showSummeryOfOrder(DTOStore chosenStore,
+                                    Collection<Pair<Float, DTOProductInStore>> productsInOrder,
+                                    float deliveryCost,
+                                    Point userLocation) {
+        System.out.println("-------------------------------------------------------------------");
+        System.out.println("Summery of order:" );
+        for(Pair<Float, DTOProductInStore> productInOrder : productsInOrder){
+            printProduct(productInOrder.getValue());
+            System.out.println("Price: " + productInOrder.getValue().getPrice());
+            System.out.println("Amount in order: " + productInOrder.getKey());
+            System.out.println("Total amount of product: " + productInOrder.getValue().getPrice() * productInOrder.getKey());
+            System.out.println("-------------------------------------------------------------------");
+        }
+        System.out.printf("Distance from store: %.2f\n",sdmSystem.getDistanceFromStore(chosenStore,userLocation));
+        System.out.println("Store ppk: " + chosenStore.getPpk());
+        System.out.println("Delivery cost: " + deliveryCost );
+        System.out.println("Total order cost: " + (deliveryCost + calcProductsInOrderCost(productsInOrder)));
+    }
+
+    private float calcProductsInOrderCost(Collection<Pair<Float, DTOProductInStore>> productsInOrder) {
+        float res = 0;
+        for(Pair<Float, DTOProductInStore> dtoProductInorder : productsInOrder){
+            res += (dtoProductInorder.getValue().getPrice() * dtoProductInorder.getKey());
+        }
+
+        return res;
+    }
+
     private void chooseProductAndBuy(DTOStore chosenStore,  Collection<Pair<Float,DTOProductInStore>> productsInOrder) {
         Scanner s = new Scanner(System.in);
         float amountToBuy;
         boolean finished = false;
         while (!finished) {
             try {
-                System.out.println("Choose a product by entering its serial number");
-                int chosenProductSerialNumber = s.nextInt();
-                DTOProductInStore chosenProduct = sdmSystem.getProductFromStore(chosenProductSerialNumber, chosenStore.getStoreSerialNumber());
-                amountToBuy =  getAmountToBuy(chosenProduct);
-                productsInOrder.add(new Pair<Float,DTOProductInStore>(amountToBuy,chosenProduct));
-                finished = !askIfFinishedOrdering();
-                if (!finished && askIfShowProductsAgain()) {
-                    printAllProductsForOrderFromStore(chosenStore);
+                System.out.println("Choose a product by entering its serial number. insert 'q' if finished");
+                String answer = s.nextLine();
+                if(!Validation.isQ(answer)) {
+                    int chosenProductSerialNumber = Integer.parseInt(answer);
+                    DTOProductInStore chosenProduct = sdmSystem.getProductFromStore(chosenProductSerialNumber, chosenStore.getStoreSerialNumber());
+                    amountToBuy = getAmountToBuy(chosenProduct);
+                    productsInOrder.add(new Pair<Float, DTOProductInStore>(amountToBuy, chosenProduct));
+//                    finished = !askIfFinishedOrdering();
+//                    if (!finished && askIfShowProductsAgain()) {
+//                        printAllProductsForOrderFromStore(chosenStore);
+//                    }
+                }
+                else{
+                    finished = true;
                 }
             } catch (ExistenceException ex) {
                 System.out.println(ex.getMessage());
-            } catch (InputMismatchException ex) {
+            } catch (InputMismatchException | NumberFormatException ex) {
                 System.out.println("You must enter an integer!");
-                s.nextLine();
+                //s.nextLine();
             }
         }
 

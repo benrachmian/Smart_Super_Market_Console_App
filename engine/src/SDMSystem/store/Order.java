@@ -8,17 +8,22 @@ import java.util.Date;
 import java.util.LinkedList;
 
 public class Order {
+    private static int generatedSerialNumber = 1000;
     private Date orderDate;
     private Collection<ProductInStore> productsInOrder;
     //private Customer whoOrdered;
     private float productsCost;
     private float deliveryCost;
+    private final int orderSerialNumber;
+
 
     public Order(Date orderDate, Collection<ProductInStore> productsInOrder, float productsCost, float deliveryCost) {
+        this.orderSerialNumber = generatedSerialNumber++;
         this.orderDate = orderDate;
         this.productsInOrder = productsInOrder;
         this.productsCost = productsCost;
         this.deliveryCost = deliveryCost;
+
     }
 
 //    public Order(){
@@ -29,13 +34,14 @@ public class Order {
 //        this.deliveryCost = 0;
 //    }
 
-    public Order(Date orderDate, /*Customer whoOrdered*/ float deliveryCost) {
-        this.orderDate = orderDate;
-        this.productsInOrder = null;
-        //this.whoOrdered = whoOrdered;
-        this.productsCost = 0;
-        this.deliveryCost = deliveryCost;
-    }
+//    public Order(Date orderDate, /*Customer whoOrdered*/ float deliveryCost) {
+//        this.orderSerialNumber = generatedSerialNumber++;
+//        this.orderDate = orderDate;
+//        this.productsInOrder = null;
+//        //this.whoOrdered = whoOrdered;
+//        this.productsCost = 0;
+//        this.deliveryCost = deliveryCost;
+//    }
 
     public Date getOrderDate() {
         return orderDate;

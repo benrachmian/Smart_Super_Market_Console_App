@@ -4,5 +4,5 @@ import java.awt.*;
 
 public interface Locationable {
     Point getLocation();
-    double getDistanceFrom(Point target);
+    float getDistanceFrom(Point target);
 }
