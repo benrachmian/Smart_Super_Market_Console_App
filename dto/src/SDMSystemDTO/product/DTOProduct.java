@@ -1,6 +1,5 @@
 package SDMSystemDTO.product;
 
-import SDMSystem.product.Product;
 import SDMSystemDTO.store.DTOStore;
 
 import java.util.Collection;

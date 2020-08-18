@@ -65,6 +65,9 @@ public class SDMConsole {
                         case 4:
                             makeOrder();
                             break;
+                        case 5:
+                            showOrdersHistoryInSystem();
+                            break;
                     }
                 }
             } else {
@@ -77,6 +80,23 @@ public class SDMConsole {
             choose = Validation.getValidChoice(MIN_CHOOSE, MAX_CHOOSE);
         }
     }
+
+    private void showOrdersHistoryInSystem() {
+        System.out.println("Orders history in system:");
+        Collection<DTOOrder> ordersInSystem = sdmSystem.getAllOrders();
+        for(DTOOrder order : ordersInSystem){
+            printOrder(order);
+        }
+    }
+
+    private void printOrder(DTOOrder order) {
+        System.out.println("-------------------------------------------------------------------");
+        System.out.println("Order serial number: " + order.getOrderSerialNumber());
+        System.out.println("Order date: " + order.getOrderDate());
+        System.out.println("Store from whom the order was made serial number: " + order.getStoreFromWhomTheOrderWasMade().getStoreSerialNumber());
+        System.out.println("Store name: " + order.getStoreFromWhomTheOrderWasMade().getStoreName());
+    }
+
 
     private void makeOrder() {
         Scanner s = new Scanner(System.in);
@@ -263,13 +283,14 @@ public class SDMConsole {
         boolean succeeded = false;
         Date orderDate = null;
         Scanner s = new Scanner(System.in);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM-hh:mm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM-HH:mm");
         dateFormat.setLenient(false);
         do {
             try {
                 System.out.println("Please enter the order date in this format: dd/MM-hh:mm");
                 String dateInput = s.nextLine();
                 orderDate = dateFormat.parse(dateInput);
+                orderDate.setYear(120);
                 succeeded = true;
             } catch (ParseException ex) {
                 System.out.println("You must enter the date in the correct format!");
@@ -330,15 +351,16 @@ public class SDMConsole {
             "\nStore name: " + dtoStore.getStoreName() +
             "\nProducts in store:\n");
         printDTOProductsInStore(dtoStore);
-        System.out.print("Orders history: ");
+        System.out.println("Orders history: ");
         printDTOStoreOrderHistory(dtoStore);
         System.out.print("PPK: " + dtoStore.getPpk());
         System.out.println("\nTotal profit from delivery: " + dtoStore.getTotalProfitFromDelivery());
     }
 
     private void printDTOStoreOrderHistory(DTOStore dtoStore) {
-        if (dtoStore.getOrdersFromStore().size() != 0) {
-            for (DTOOrder order : dtoStore.getOrdersFromStore()) {
+        Collection<DTOOrder> storeOrders = sdmSystem.getOrdersFromStore(dtoStore.getStoreSerialNumber());
+        if (storeOrders.size() != 0) {
+            for (DTOOrder order : storeOrders) {
                 printDTOOrder(order);
             }
         } else {
@@ -348,7 +370,7 @@ public class SDMConsole {
 
     private void printDTOOrder(DTOOrder order) {
         System.out.println("Order Date=" + order.getOrderDate().toString() +
-                "\nNumber of products: " + order.getProductsInOrder().size() +
+                "\nNumber of products: " + order.getAmountOfProducts() +
                 "\nProducts cost: " + order.getProductsCost() +
                 "\nDelivery cost: " + order.getDeliveryCost() +
                 "\nOrder cost: " + (order.getProductsCost() + order.getDeliveryCost()));

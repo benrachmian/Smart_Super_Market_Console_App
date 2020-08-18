@@ -1,8 +1,6 @@
 package SDMSystemDTO.store;
 
-import SDMSystem.exceptions.ExistenceException;
-import SDMSystem.product.ProductInStore;
-import SDMSystem.store.Store;
+
 import SDMSystemDTO.DTOFeedback;
 import SDMSystemDTO.product.DTOProductInStore;
 
@@ -16,7 +14,7 @@ public class DTOStore {
     private float ppk;
     private final int storeSerialNumber;
     private String storeName;
-    private Collection<DTOOrder> ordersFromStore;
+    //private Collection<DTOOrder> ordersFromStore;
     //private Collection<DTOFeedback> storeFeedbacks;
     private float totalProfitFromDelivery;
 
@@ -26,7 +24,6 @@ public class DTOStore {
                     float ppk,
                     int storeSerialNumber,
                     String storeName,
-                    Collection<DTOOrder> ordersFromStore,
                     //Collection<DTOFeedback> storeFeedbacks,
                     float totalProfitFromDelivery) {
         this.productsInStore = productsInStore;
@@ -34,7 +31,7 @@ public class DTOStore {
         this.ppk = ppk;
         this.storeSerialNumber = storeSerialNumber;
         this.storeName = storeName;
-        this.ordersFromStore = ordersFromStore;
+       // this.ordersFromStore = ordersFromStore;
         //this.storeFeedbacks = storeFeedbacks;
         this.totalProfitFromDelivery = totalProfitFromDelivery;
     }
@@ -59,9 +56,9 @@ public class DTOStore {
         return storeName;
     }
 
-    public Collection<DTOOrder> getOrdersFromStore() {
-        return ordersFromStore;
-    }
+//    public Collection<DTOOrder> getOrdersFromStore() {
+//        return ordersFromStore;
+//    }
 
 //    public Collection<DTOFeedback> getStoreFeedbacks() {
 //        return storeFeedbacks;

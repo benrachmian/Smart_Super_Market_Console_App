@@ -1,6 +1,5 @@
 package SDMSystemDTO.customer;
 
-import SDMSystem.customer.Customer;
 
 public class DTOCustomer {
     private final String customerName;

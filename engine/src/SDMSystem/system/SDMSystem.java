@@ -7,6 +7,7 @@ import SDMSystem.exceptions.*;
 import SDMSystem.validation.*;
 import SDMSystemDTO.product.DTOProduct;
 import SDMSystemDTO.product.DTOProductInStore;
+import SDMSystemDTO.store.DTOOrder;
 import SDMSystemDTO.store.DTOStore;
 import SDMSystemDTO.product.WayOfBuying;
 import javafx.util.Pair;
@@ -210,5 +211,21 @@ public class SDMSystem {
     public float getDistanceFromStore(DTOStore chosenStore, Point userLocation) {
         Store store = storesInSystem.getStoreInSystem(chosenStore.getStoreSerialNumber());
         return store.getDistanceFrom(userLocation);
+    }
+
+    public Collection<DTOOrder> getAllOrders() {
+        Collection<DTOOrder> dtoOrders = new LinkedList<>();
+        for(Store store : storesInSystem.getStoresInSystemBySerialNumber().values()){
+            for(DTOOrder order : store.getDTOOrdersFromStore()){
+                dtoOrders.add(order);
+            }
+        }
+
+        return dtoOrders;
+    }
+
+    public Collection<DTOOrder> getOrdersFromStore(int storeSerialNumber) {
+        Store store = storesInSystem.getStoreInSystem(storeSerialNumber);
+        return store.getDTOOrdersFromStore();
     }
 }
