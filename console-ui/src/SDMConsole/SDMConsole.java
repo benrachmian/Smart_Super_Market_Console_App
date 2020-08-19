@@ -118,11 +118,32 @@ public class SDMConsole {
 
     }
 
+    private void makeDynamicOrder() {
+        Scanner s = new Scanner(System.in);
+        //Pair: amount,product
+        Collection<Pair<Float, DTOProduct>> productsInOrder = new LinkedList<>();
+        Date orderDate = getOrderDateFromUser();
+        Point userLocation = getLocationFromTheUser();
+        System.out.println("Please choose the products you would like to order:");
+
+        printAllProductsForDynamicOrder();
+        chooseProducts(productsInOrder);
+
+    }
+
+    private void printAllProductsForDynamicOrder() {
+        for(DTOProduct product : sdmSystem.getProductsInSystem().values()){
+            System.out.println("-------------------------------------------------------------------");
+            printProduct(product);
+            System.out.println("-------------------------------------------------------------------");
+        }
+    }
+
 
     private void makeStaticOrder() {
         Scanner s = new Scanner(System.in);
         //Pair: amount,product
-        Collection<Pair<Float, DTOProductInStore>> productsInOrder = new LinkedList<>();
+        Collection<Pair<Float, DTOProduct>> productsInOrder = new LinkedList<>();
         boolean succeeded = false;
         float deliveryCost = 0;
         printAllStoresIdNamePpk();
@@ -133,15 +154,16 @@ public class SDMConsole {
                 DTOStore chosenStore = sdmSystem.getStoreFromStores(chosenStoreSerialNumber);
                 if (chosenStore != null) {
                     Date orderDate = getOrderDateFromUser();
-                    Point userLocation = getLocationFromTheUser(chosenStore.getStoreLocation());
+                    Point userLocation = getLocationDifferentFromStore(chosenStore.getStoreLocation());
                     //if (userLocation != null) {
                     printAllProductsForOrderFromStore(chosenStore);
-                    chooseProductAndBuy(chosenStore, productsInOrder);
+                    chooseProducts(productsInOrder);
                     deliveryCost = sdmSystem.getDeliveryCost(chosenStore, userLocation);
                     if (productsInOrder.size() >= 1) {
-                        showSummeryOfOrder(chosenStore, productsInOrder, deliveryCost, userLocation);
+                        Collection<Pair<Float, DTOProductInStore>> productsInOrderAsProductInStoreObj = createProductInStoreCollection(chosenStore,productsInOrder);
+                        showSummeryOfOrder(chosenStore, productsInOrderAsProductInStoreObj, deliveryCost, userLocation);
                         if (askIfConfirmOrder()) {
-                            sdmSystem.makeNewStaticOrder(chosenStore, orderDate, deliveryCost, productsInOrder);
+                            sdmSystem.makeNewStaticOrder(chosenStore, orderDate, deliveryCost, productsInOrderAsProductInStoreObj);
                             System.out.println("The order was made successfully!");
                         }
                     }
@@ -160,6 +182,25 @@ public class SDMConsole {
             }
         }
         while (!succeeded);
+    }
+
+    private Point getLocationDifferentFromStore(Point storeLocation) {
+        Point userLocation = getLocationFromTheUser();
+        while ((userLocation.x == storeLocation.x && userLocation.y == storeLocation.y)) {
+            System.out.println("The location can't be the same as the store location!");
+            userLocation = getLocationFromTheUser();
+        }
+
+        return userLocation;
+    }
+
+    private Collection<Pair<Float, DTOProductInStore>> createProductInStoreCollection(DTOStore chosenStore, Collection<Pair<Float, DTOProduct>> productsInOrder) {
+        Collection<Pair<Float, DTOProductInStore>> productsInStore = new LinkedList<>();
+        for(Pair<Float, DTOProduct> dtoProduct : productsInOrder){
+            productsInStore.add(new Pair(dtoProduct.getKey(),chosenStore.getProductFromStore(dtoProduct.getValue().getProductSerialNumber())));
+        }
+
+        return productsInStore;
     }
 
     private boolean askIfConfirmOrder() {
@@ -195,7 +236,7 @@ public class SDMConsole {
         return res;
     }
 
-    private void chooseProductAndBuy(DTOStore chosenStore,  Collection<Pair<Float,DTOProductInStore>> productsInOrder) {
+    private void chooseProducts(Collection<Pair<Float,DTOProduct>> productsInOrder) {
         Scanner s = new Scanner(System.in);
         float amountToBuy;
         boolean finished = false;
@@ -205,13 +246,15 @@ public class SDMConsole {
                 String answer = s.nextLine();
                 if(!Validation.isQ(answer)) {
                     int chosenProductSerialNumber = Integer.parseInt(answer);
-                    DTOProductInStore chosenProduct = sdmSystem.getProductFromStore(chosenProductSerialNumber, chosenStore.getStoreSerialNumber());
-                    amountToBuy = getAmountToBuy(chosenProduct);
-                    productsInOrder.add(new Pair<Float, DTOProductInStore>(amountToBuy, chosenProduct));
-//                    finished = !askIfFinishedOrdering();
-//                    if (!finished && askIfShowProductsAgain()) {
-//                        printAllProductsForOrderFromStore(chosenStore);
-//                    }
+                    //DTOProductInStore chosenProduct = sdmSystem.getProductFromStore(chosenProductSerialNumber, chosenStore.getStoreSerialNumber());
+                    DTOProduct chosenProduct = sdmSystem.getProductFromSystem(chosenProductSerialNumber);
+                    if(chosenProduct != null) {
+                        amountToBuy = getAmountToBuy(chosenProduct);
+                        productsInOrder.add(new Pair<Float, DTOProduct>(amountToBuy, chosenProduct));
+                    }
+                    else{
+                        System.out.println("There are no such product! Please try again!");
+                    }
                 }
                 else{
                     finished = true;
@@ -220,7 +263,6 @@ public class SDMConsole {
                 System.out.println(ex.getMessage());
             } catch (InputMismatchException | NumberFormatException | StringIndexOutOfBoundsException ex) {
                 System.out.println("You must enter an integer or Q!");
-                //s.nextLine();
             }
         }
 
@@ -236,7 +278,7 @@ public class SDMConsole {
         return Validation.getValidYesOrNoAnswer();
     }
 
-    private float getAmountToBuy(DTOProductInStore chosenProduct) {
+    private float getAmountToBuy(DTOProduct chosenProduct) {
         float amountToBuy;
         if (chosenProduct.getWayOfBuying() == WayOfBuying.BY_QUANTITY) {
             System.out.println("Please enter the number of units you would like to buy:");
@@ -270,7 +312,7 @@ public class SDMConsole {
 
     }
 
-    private Point getLocationFromTheUser(Point storeLocation) {
+    private Point getLocationFromTheUser() {
         Scanner s = new Scanner(System.in);
         int x,y;
         Point userLocation = null;
@@ -283,12 +325,12 @@ public class SDMConsole {
                 System.out.print("y: ");
                 y = s.nextInt();
                 if (Validation.checkIfLocationInRange(x, y, SDMSystem.MIN_COORDINATE, SDMSystem.MAX_COORDINATE)) {
-                    if (!(x == storeLocation.x && y == storeLocation.y)) {
+//                    if (!(x == storeLocation.x && y == storeLocation.y)) {
                         userLocation = new Point(x, y);
                         succeeded = true;
-                    } else {
-                        System.out.println("The location can't be the same as the store location!");
-                    }
+//                    } else {
+//                        System.out.println("The location can't be the same as the store location!");
+//                    }
                 }
             } catch (InputMismatchException ex) {
                 System.out.println("You must enter in integer!");

@@ -290,4 +290,13 @@ public class SDMSystem {
         Store store = storesInSystem.getStoreInSystem(storeSerialNumber);
         return store.getDTOOrdersFromStore();
     }
+
+    public DTOProduct getProductFromSystem(int chosenProductSerialNumber) {
+        DTOProduct dtoProduct = null;
+        Product chosenProduct = productsInSystem.get(chosenProductSerialNumber);
+        if(chosenProduct != null){
+            dtoProduct = chosenProduct.createDTOProduct();
+        }
+        return dtoProduct;
+    }
 }

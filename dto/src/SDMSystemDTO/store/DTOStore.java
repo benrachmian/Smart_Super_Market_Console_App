@@ -36,6 +36,10 @@ public class DTOStore {
         this.totalProfitFromDelivery = totalProfitFromDelivery;
     }
 
+    public DTOProductInStore getProductFromStore(int productSerialNumber){
+        return productsInStore.get(productSerialNumber);
+    }
+
     public Map<Integer, DTOProductInStore> getProductsInStore() {
         return productsInStore;
     }
