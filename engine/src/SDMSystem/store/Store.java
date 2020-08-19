@@ -51,7 +51,7 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
     public void addNewProductToStore(Product newProduct, float price){
         //if already in store throws exception
         if(productsInStore.putIfAbsent(newProduct.getSerialNumber(),
-                                        new ProductInStore(newProduct,price))
+                                        new ProductInStore(newProduct,price,this))
                                         != null){
             throw new ExistenceException(true,newProduct.getSerialNumber(),"Product", "Store");
         }
@@ -196,60 +196,65 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
         return dtoProductInStoreCollection;
     }
 
-    public void makeNewOrderAndAddToOrdersIsSystem(Date orderDate,
-                                                   float deliveryCost,
-                                                   Collection<Pair<Float, DTOProductInStore>> dtoProductsInOrder,
-                                                   Map<Integer, Order> ordersInSystem) {
-        Order newOrder = createdNewOrder(orderDate,deliveryCost,dtoProductsInOrder);
+//    public void makeNewOrderAndAddToOrdersIsSystem(Date orderDate,
+//                                                   float deliveryCost,
+//                                                   Collection<Pair<Float, ProductInStore>> productsInOrder,
+//                                                   Map<Integer, Order> ordersInSystem) {
+//        Order newOrder = createdNewOrderObject(orderDate,deliveryCost,productsInOrder);
+//
+//        ordersFromStore.add(newOrder);
+//        ordersInSystem.put(newOrder.getOrderSerialNumber(),newOrder);
+//    }
 
-        ordersFromStore.add(newOrder);
-        ordersInSystem.put(newOrder.getOrderSerialNumber(),newOrder);
-    }
+//    private Order createdNewOrderObject(Date orderDate,
+//                                        float deliveryCost,
+//                                        Collection<Pair<Float, ProductInStore>> productsInOrder) {
+//
+//        Collection<Pair<Float,ProductInStore>> productsInOrder = new LinkedList<>();
+//        int amountOfProducts = 0, amountKindsOfProducts = 0;
+//        for(Pair<Float, DTOProductInStore> dtoProductInOrder : productsInOrder){
+//            ProductInStore productInStore = productsInStore.get(dtoProductInOrder.getValue().getProductSerialNumber());
+//            productInStore.increaseAmountSoldInStore(dtoProductInOrder.getKey());
+//            Pair<Float,ProductInStore> newProductInOrder = new Pair<>(dtoProductInOrder.getKey(),productInStore);
+//            productsInOrder.add(newProductInOrder);
+//            amountKindsOfProducts++;
+//            if(dtoProductInOrder.getValue().getWayOfBuying() == WayOfBuying.BY_QUANTITY){
+//                amountOfProducts += dtoProductInOrder.getKey();
+//            }
+//            else{
+//                amountOfProducts++;
+//            }
+//        }
+//        float productsCost = calcProductsCost(productsInOrder);
+//
+//        return new Order(orderDate,
+//                productsInOrder,
+//                productsCost,
+//                deliveryCost,
+//                this,
+//                amountOfProducts,
+//                amountKindsOfProducts);
+//    }
 
-    private Order createdNewOrder(Date orderDate,
-                                  float deliveryCost,
-                                  Collection<Pair<Float, DTOProductInStore>> dtoProductsInOrder) {
-
-        Collection<Pair<Float,ProductInStore>> productsInOrder = new LinkedList<>();
-        int amountOfProducts = 0, amountKindsOfProducts = 0;
-        for(Pair<Float, DTOProductInStore> dtoProductInOrder : dtoProductsInOrder){
-            ProductInStore productInStore = productsInStore.get(dtoProductInOrder.getValue().getProductSerialNumber());
-            productInStore.increaseAmountSoldInStore(dtoProductInOrder.getKey());
-            Pair<Float,ProductInStore> newProductInOrder = new Pair<>(dtoProductInOrder.getKey(),productInStore);
-            productsInOrder.add(newProductInOrder);
-            amountKindsOfProducts++;
-            if(dtoProductInOrder.getValue().getWayOfBuying() == WayOfBuying.BY_QUANTITY){
-                amountOfProducts += dtoProductInOrder.getKey();
-            }
-            else{
-                amountOfProducts++;
-            }
-        }
-        float productsCost = calcProductsCost(productsInOrder);
-
-        return new Order(orderDate,
-                productsInOrder,
-                productsCost,
-                deliveryCost,
-                this,
-                amountOfProducts,
-                amountKindsOfProducts);
-    }
-
-    private float calcProductsCost(Collection<Pair<Float, ProductInStore>> productsInOrder) {
-        float totalCost = 0;
-        for(Pair<Float,ProductInStore> productInOrder : productsInOrder){
-            totalCost += productInOrder.getKey() * productInOrder.getValue().getPrice();
-        }
-
-        return totalCost;
-    }
+//    private float calcProductsCost(Collection<Pair<Float, ProductInStore>> productsInOrder) {
+//        float totalCost = 0;
+//        for(Pair<Float,ProductInStore> productInOrder : productsInOrder){
+//            totalCost += productInOrder.getKey() * productInOrder.getValue().getPrice();
+//        }
+//
+//        return totalCost;
+//    }
 
     public float getDeliveryCost(Point locationFromTheUser) {
         return this.getDistanceFrom(locationFromTheUser) * ppk;
     }
 
-    public void increaseTotalProfitFromDelivery(float deliveryCost) {
+    private void increaseTotalProfitFromDelivery(float deliveryCost) {
         totalProfitFromDelivery += deliveryCost;
+    }
+
+    public void addOrder(Order newOrder, float deliveryCost) {
+        ordersFromStore.add(newOrder);
+        increaseTotalProfitFromDelivery(deliveryCost);
     }
 }

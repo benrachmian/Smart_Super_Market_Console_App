@@ -170,21 +170,76 @@ public class SDMSystem {
         return dtoProductInStore;
     }
 
-    public void makeNewOrder(DTOStore chosenStore,
-                             Date orderDate,
-                             float deliveryCost,
-                             Collection<Pair<Float,DTOProductInStore>> productsInOrder) {
+    public void makeNewStaticOrder(DTOStore chosenStore,
+                                   Date orderDate,
+                                   float deliveryCost,
+                                   Collection<Pair<Float,DTOProductInStore>> dtoProductsInOrder) {
         Store storeWithNewOrder = storesInSystem.getStoreInSystem(chosenStore.getStoreSerialNumber());
-        storeWithNewOrder.makeNewOrderAndAddToOrdersIsSystem(orderDate,deliveryCost,productsInOrder,ordersInSystem);
-        updateAmountsSold(productsInOrder);
-        storeWithNewOrder.increaseTotalProfitFromDelivery(deliveryCost);
+        Collection<Pair<Float,ProductInStore>> productsInOrder = createProductsInOrderCollectionFromDTO(dtoProductsInOrder);
+        //storeWithNewOrder.makeNewOrderAndAddToOrdersIsSystem(orderDate,deliveryCost,productsInOrder,ordersInSystem);
+        Order newOrder = createdNewOrderObject(orderDate,deliveryCost,productsInOrder);
+        storeWithNewOrder.addOrder(newOrder,deliveryCost);
+        updateAmountsSoldOfProduct(productsInOrder);
+        ordersInSystem.put(newOrder.getOrderSerialNumber(),newOrder);
+        //storeWithNewOrder.increaseTotalProfitFromDelivery(deliveryCost);
+    }
+
+    private Order createdNewOrderObject(Date orderDate,
+                                        float deliveryCost,
+                                        Collection<Pair<Float, ProductInStore>> productsInOrder) {
+
+        Map<Integer,Store> storesFromWhomTheOrderWasMade = new HashMap<>();
+        int amountOfProducts = 0, amountKindsOfProducts = 0;
+        for(Pair<Float, ProductInStore> productInOrderAndAmount : productsInOrder){
+            productInOrderAndAmount.getValue().increaseAmountSoldInStore(productInOrderAndAmount.getKey());
+            Store storeTheProductBelongs = productInOrderAndAmount.getValue().getStoreTheProductBelongs();
+            storesFromWhomTheOrderWasMade.putIfAbsent(storeTheProductBelongs.getSerialNumber(),storeTheProductBelongs);
+            amountKindsOfProducts++;
+            if(productInOrderAndAmount.getValue().getWayOfBuying() == WayOfBuying.BY_QUANTITY){
+                amountOfProducts += productInOrderAndAmount.getKey();
+            }
+            else{
+                amountOfProducts++;
+            }
+        }
+        float productsCost = calcProductsCost(productsInOrder);
+
+        return new Order(orderDate,
+                productsInOrder,
+                productsCost,
+                deliveryCost,
+                storesFromWhomTheOrderWasMade,
+                amountOfProducts,
+                amountKindsOfProducts,
+                null);
+    }
+
+    private float calcProductsCost(Collection<Pair<Float, ProductInStore>> productsInOrder) {
+        float totalCost = 0;
+        for(Pair<Float,ProductInStore> productInOrder : productsInOrder){
+            totalCost += productInOrder.getKey() * productInOrder.getValue().getPrice();
+        }
+
+        return totalCost;
+    }
+
+    private Collection<Pair<Float, ProductInStore>> createProductsInOrderCollectionFromDTO(Collection<Pair<Float, DTOProductInStore>> dtoProductsInOrder) {
+        Collection<Pair<Float,ProductInStore>> productsInOrder = new LinkedList<>();
+        for(Pair<Float, DTOProductInStore> dtoProductInOrder : dtoProductsInOrder){
+            Store storeWithTheProduct = storesInSystem.getStoreInSystem(dtoProductInOrder.getValue().getStoreTheProductBelongsID());
+            ProductInStore productInStore = storeWithTheProduct.getProductInStore(dtoProductInOrder.getValue().getProductSerialNumber());
+            Pair<Float,ProductInStore> newProductInOrder = new Pair<>(dtoProductInOrder.getKey(),productInStore);
+            productsInOrder.add(newProductInOrder);
+        }
+
+        return productsInOrder;
     }
 
 
-    private void updateAmountsSold(Collection<Pair<Float, DTOProductInStore>> productsInOrder) {
-        for(Pair<Float, DTOProductInStore> productInOrder : productsInOrder)
+    private void updateAmountsSoldOfProduct(Collection<Pair<Float, ProductInStore>> productsInOrder) {
+        for(Pair<Float, ProductInStore> productInOrder : productsInOrder)
         {
-            Product productInSystem = productsInSystem.get(productInOrder.getValue().getProductSerialNumber());
+            Product productInSystem = productsInSystem.get(productInOrder.getValue().getSerialNumber());
             productInSystem.increaseAmountSoldInAllStores(productInOrder.getKey());
         }
     }

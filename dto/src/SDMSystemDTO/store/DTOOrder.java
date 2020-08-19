@@ -13,7 +13,7 @@ public class DTOOrder {
     private float productsCost;
     private float deliveryCost;
     private final int orderSerialNumber;
-    private DTOStore storeFromWhomTheOrderWasMade;
+    private Collection<DTOStore> storesFromWhomTheOrderWasMade;
     private int amountOfProducts;
     private int amountOfProductsKinds;
 
@@ -23,7 +23,7 @@ public class DTOOrder {
                     float productsCost,
                     float deliveryCost,
                     int orderSerialNumber,
-                    DTOStore storeFromWhomTheOrderWasMade,
+                    Collection<DTOStore> storesFromWhomTheOrderWasMade,
                     int amountOfProducts,
                     int amountOfProductsKinds) {
         this.orderDate = orderDate;
@@ -31,7 +31,7 @@ public class DTOOrder {
         this.productsCost = productsCost;
         this.deliveryCost = deliveryCost;
         this.orderSerialNumber = orderSerialNumber;
-        this.storeFromWhomTheOrderWasMade = storeFromWhomTheOrderWasMade;
+        this.storesFromWhomTheOrderWasMade = storesFromWhomTheOrderWasMade;
         this.amountOfProducts = amountOfProducts;
         this.amountOfProductsKinds = amountOfProductsKinds;
     }
@@ -52,8 +52,8 @@ public class DTOOrder {
         return amountOfProductsKinds;
     }
 
-    public DTOStore getStoreFromWhomTheOrderWasMade() {
-        return storeFromWhomTheOrderWasMade;
+    public Collection<DTOStore> getStoreFromWhomTheOrderWasMade() {
+        return storesFromWhomTheOrderWasMade;
     }
 
     public int getOrderSerialNumber() {

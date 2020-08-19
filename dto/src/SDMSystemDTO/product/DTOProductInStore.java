@@ -7,6 +7,7 @@ import java.util.Collection;
 public class DTOProductInStore extends DTOProduct {
     private float price;
     private float amountSoldInStore;
+    private int storeTheProductBelongsID;
 
     public DTOProductInStore(int productSerialNumber,
                              String productName,
@@ -14,13 +15,18 @@ public class DTOProductInStore extends DTOProduct {
                              //Collection<DTOStore> storesSellingTheProduct,
                              float amountSoldInAllStores,
                              float price,
-                             float amountSoldInStore) {
+                             float amountSoldInStore,
+                             int storeTheProductBelongsID) {
         super(productSerialNumber, productName, wayOfBuying, /*storesSellingTheProduct*/ amountSoldInAllStores);
         this.price = price;
         this.amountSoldInStore = amountSoldInStore;
+        this.storeTheProductBelongsID = storeTheProductBelongsID;
     }
 
 
+    public int getStoreTheProductBelongsID() {
+        return storeTheProductBelongsID;
+    }
 
     public float getPrice() {
         return price;

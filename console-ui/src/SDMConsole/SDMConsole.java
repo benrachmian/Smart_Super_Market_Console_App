@@ -1,17 +1,13 @@
 package SDMConsole;
 
 import SDMSystem.exceptions.ExistenceException;
-import SDMSystem.product.Product;
 import SDMSystem.product.ProductInStore;
-import SDMSystem.store.Order;
 import SDMSystem.system.SDMSystem;
-import SDMSystem.store.Store;
 import SDMSystemDTO.product.DTOProduct;
 import SDMSystemDTO.product.DTOProductInStore;
 import SDMSystemDTO.product.WayOfBuying;
 import SDMSystemDTO.store.DTOOrder;
 import SDMSystemDTO.store.DTOStore;
-import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 import javafx.util.Pair;
 import xml.XMLHelper;
 
@@ -98,8 +94,8 @@ public class SDMConsole {
         System.out.println("-------------------------------------------------------------------");
         System.out.println("Order serial number: " + order.getOrderSerialNumber());
         System.out.println("Order date: " + order.getOrderDate());
-        System.out.println("Store from whom the order was made serial number: " + order.getStoreFromWhomTheOrderWasMade().getStoreSerialNumber());
-        System.out.println("Store name: " + order.getStoreFromWhomTheOrderWasMade().getStoreName());
+//        System.out.println("Store from whom the order was made serial number: " + order.getStoreFromWhomTheOrderWasMade().getStoreSerialNumber());
+//        System.out.println("Store name: " + order.getStoreFromWhomTheOrderWasMade().getStoreName());
         System.out.println("Kinds of products in the order: " + order.getAmountOfProductsKinds());
         System.out.println("Total number of products in order: " + order.getAmountOfProducts());
         System.out.printf("Total cost of all products: %.2f\n",order.getProductsCost());
@@ -108,8 +104,22 @@ public class SDMConsole {
         System.out.println("-------------------------------------------------------------------");
     }
 
+    private void makeOrder(){
+        System.out.println("Would you like to make a static order or dynamic order?");
+        System.out.println("1. Static order");
+        System.out.println("2. Dynamic order");
+        int choose = Validation.getValidChoice(1, 2);
+        if(choose ==1){
+            makeStaticOrder();
+        }
+        else{
+            makeDynamicOrder();
+        }
 
-    private void makeOrder() {
+    }
+
+
+    private void makeStaticOrder() {
         Scanner s = new Scanner(System.in);
         //Pair: amount,product
         Collection<Pair<Float, DTOProductInStore>> productsInOrder = new LinkedList<>();
@@ -125,13 +135,13 @@ public class SDMConsole {
                     Date orderDate = getOrderDateFromUser();
                     Point userLocation = getLocationFromTheUser(chosenStore.getStoreLocation());
                     //if (userLocation != null) {
-                    deliveryCost = sdmSystem.getDeliveryCost(chosenStore, userLocation);
                     printAllProductsForOrderFromStore(chosenStore);
                     chooseProductAndBuy(chosenStore, productsInOrder);
+                    deliveryCost = sdmSystem.getDeliveryCost(chosenStore, userLocation);
                     if (productsInOrder.size() >= 1) {
                         showSummeryOfOrder(chosenStore, productsInOrder, deliveryCost, userLocation);
                         if (askIfConfirmOrder()) {
-                            sdmSystem.makeNewOrder(chosenStore, orderDate, deliveryCost, productsInOrder);
+                            sdmSystem.makeNewStaticOrder(chosenStore, orderDate, deliveryCost, productsInOrder);
                             System.out.println("The order was made successfully!");
                         }
                     }
