@@ -102,9 +102,9 @@ public class SDMConsole {
         System.out.println("Store name: " + order.getStoreFromWhomTheOrderWasMade().getStoreName());
         System.out.println("Kinds of products in the order: " + order.getAmountOfProductsKinds());
         System.out.println("Total number of products in order: " + order.getAmountOfProducts());
-        System.out.println("Total cost of all products:" + order.getProductsCost());
-        System.out.println("Delivery cost: " + order.getDeliveryCost());
-        System.out.println("Total order cost: " + order.getOrderCost());
+        System.out.printf("Total cost of all products: %.2f\n",order.getProductsCost());
+        System.out.printf("Delivery cost: %.2f\n",order.getDeliveryCost());
+        System.out.printf("Total order cost: %.2f\n ", order.getOrderCost());
         System.out.println("-------------------------------------------------------------------");
     }
 
@@ -172,8 +172,8 @@ public class SDMConsole {
         }
         System.out.printf("Distance from store: %.2f\n",sdmSystem.getDistanceFromStore(chosenStore,userLocation));
         System.out.println("Store ppk: " + chosenStore.getPpk());
-        System.out.println("Delivery cost: " + deliveryCost );
-        System.out.println("Total order cost: " + (deliveryCost + calcProductsInOrderCost(productsInOrder)));
+        System.out.printf("Delivery cost: %.2f\n", deliveryCost );
+        System.out.printf("Total order cost: %.2f\n" ,(deliveryCost + calcProductsInOrderCost(productsInOrder)));
     }
 
     private float calcProductsInOrderCost(Collection<Pair<Float, DTOProductInStore>> productsInOrder) {
@@ -208,8 +208,8 @@ public class SDMConsole {
                 }
             } catch (ExistenceException ex) {
                 System.out.println(ex.getMessage());
-            } catch (InputMismatchException | NumberFormatException ex) {
-                System.out.println("You must enter an integer!");
+            } catch (InputMismatchException | NumberFormatException | StringIndexOutOfBoundsException ex) {
+                System.out.println("You must enter an integer or Q!");
                 //s.nextLine();
             }
         }
@@ -365,7 +365,7 @@ public class SDMConsole {
         System.out.println("Orders history: ");
         printDTOStoreOrderHistory(dtoStore);
         System.out.print("PPK: " + dtoStore.getPpk());
-        System.out.println("\nTotal profit from delivery: " + dtoStore.getTotalProfitFromDelivery());
+        System.out.printf("\nTotal profit from delivery: %.2f\n", dtoStore.getTotalProfitFromDelivery());
     }
 
     private void printDTOStoreOrderHistory(DTOStore dtoStore) {
@@ -381,11 +381,11 @@ public class SDMConsole {
 
     private void printDTOOrder(DTOOrder order) {
         System.out.println("-------------------------------------------------------------------");
-        System.out.println("Order Date=" + order.getOrderDate().toString() +
-                "\nNumber of products: " + order.getAmountOfProducts() +
-                "\nProducts cost: " + order.getProductsCost() +
-                "\nDelivery cost: " + order.getDeliveryCost() +
-                "\nOrder cost: " + (order.getProductsCost() + order.getDeliveryCost()));
+        System.out.println("Order Date: " + order.getOrderDate().toString());
+        System.out.println("Number of products: " + order.getAmountOfProducts());
+        System.out.printf("Products cost: %.2f\n", order.getProductsCost());
+        System.out.printf("Delivery cost: %.2f\n", order.getDeliveryCost());
+        System.out.printf("Order cost: %.2f\n", (order.getProductsCost() + order.getDeliveryCost()));
         System.out.println("-------------------------------------------------------------------");
     }
 

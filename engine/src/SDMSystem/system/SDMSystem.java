@@ -2,6 +2,7 @@ package SDMSystem.system;
 
 import SDMSystem.product.Product;
 import SDMSystem.product.ProductInStore;
+import SDMSystem.store.Order;
 import SDMSystem.store.Store;
 import SDMSystem.exceptions.*;
 import SDMSystem.validation.*;
@@ -23,10 +24,12 @@ public class SDMSystem {
     //In order to create two different way to find a store - by serial number and by location
     private StoresInSystem storesInSystem;
     private Map<Integer,Product> productsInSystem;
+    private Map<Integer, Order> ordersInSystem;
 
     public SDMSystem() {
         storesInSystem = new StoresInSystem();
         productsInSystem = new HashMap<>();
+        ordersInSystem = new HashMap<>();
     }
 
 
@@ -172,10 +175,11 @@ public class SDMSystem {
                              float deliveryCost,
                              Collection<Pair<Float,DTOProductInStore>> productsInOrder) {
         Store storeWithNewOrder = storesInSystem.getStoreInSystem(chosenStore.getStoreSerialNumber());
-        storeWithNewOrder.makeNewOrder(orderDate,deliveryCost,productsInOrder);
+        storeWithNewOrder.makeNewOrderAndAddToOrdersIsSystem(orderDate,deliveryCost,productsInOrder,ordersInSystem);
         updateAmountsSold(productsInOrder);
         storeWithNewOrder.increaseTotalProfitFromDelivery(deliveryCost);
     }
+
 
     private void updateAmountsSold(Collection<Pair<Float, DTOProductInStore>> productsInOrder) {
         for(Pair<Float, DTOProductInStore> productInOrder : productsInOrder)
@@ -215,10 +219,13 @@ public class SDMSystem {
 
     public Collection<DTOOrder> getAllOrders() {
         Collection<DTOOrder> dtoOrders = new LinkedList<>();
-        for(Store store : storesInSystem.getStoresInSystemBySerialNumber().values()){
-            for(DTOOrder order : store.getDTOOrdersFromStore()){
-                dtoOrders.add(order);
-            }
+//        for(Store store : storesInSystem.getStoresInSystemBySerialNumber().values()){
+//            for(DTOOrder order : store.getDTOOrdersFromStore()){
+//                dtoOrders.add(order);
+//            }
+//        }
+        for(Order order : ordersInSystem.values()){
+            dtoOrders.add(order.createDTOOrderFromOrder());
         }
 
         return dtoOrders;

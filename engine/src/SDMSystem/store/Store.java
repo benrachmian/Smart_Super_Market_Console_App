@@ -179,15 +179,7 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
     public Collection<DTOOrder> getDTOOrdersFromStore() {
         Collection<DTOOrder> dtoOrders = new LinkedList<>();
         for(Order order : ordersFromStore){
-            DTOOrder newDTOOrder = new DTOOrder(
-                    order.getOrderDate(),
-                    order.getDTOProductsInOrder(),
-                    order.getProductsCost(),
-                    order.getDeliveryCost(),
-                    order.getOrderSerialNumber(),
-                    this.createDTOStore(),
-                    order.getAmountOfProducts(),
-                    order.getAmountOfProductsKinds());
+            DTOOrder newDTOOrder = order.createDTOOrderFromOrder();
             dtoOrders.add(newDTOOrder);
         }
 
@@ -204,7 +196,20 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
         return dtoProductInStoreCollection;
     }
 
-    public void makeNewOrder(Date orderDate, float  deliveryCost, Collection<Pair<Float,DTOProductInStore>> dtoProductsInOrder) {
+    public void makeNewOrderAndAddToOrdersIsSystem(Date orderDate,
+                                                   float deliveryCost,
+                                                   Collection<Pair<Float, DTOProductInStore>> dtoProductsInOrder,
+                                                   Map<Integer, Order> ordersInSystem) {
+        Order newOrder = createdNewOrder(orderDate,deliveryCost,dtoProductsInOrder);
+
+        ordersFromStore.add(newOrder);
+        ordersInSystem.put(newOrder.getOrderSerialNumber(),newOrder);
+    }
+
+    private Order createdNewOrder(Date orderDate,
+                                  float deliveryCost,
+                                  Collection<Pair<Float, DTOProductInStore>> dtoProductsInOrder) {
+
         Collection<Pair<Float,ProductInStore>> productsInOrder = new LinkedList<>();
         int amountOfProducts = 0, amountKindsOfProducts = 0;
         for(Pair<Float, DTOProductInStore> dtoProductInOrder : dtoProductsInOrder){
@@ -221,14 +226,14 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
             }
         }
         float productsCost = calcProductsCost(productsInOrder);
-        //float deliveryCost = getDeliveryCost()
-        ordersFromStore.add(new Order(orderDate,
+
+        return new Order(orderDate,
                 productsInOrder,
                 productsCost,
                 deliveryCost,
                 this,
                 amountOfProducts,
-                amountKindsOfProducts));
+                amountKindsOfProducts);
     }
 
     private float calcProductsCost(Collection<Pair<Float, ProductInStore>> productsInOrder) {

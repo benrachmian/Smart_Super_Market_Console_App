@@ -4,6 +4,7 @@ import SDMSystem.customer.Customer;
 import SDMSystem.product.ProductInStore;
 import SDMSystemDTO.product.DTOProductInStore;
 import SDMSystemDTO.product.WayOfBuying;
+import SDMSystemDTO.store.DTOOrder;
 import javafx.util.Pair;
 
 import java.util.Collection;
@@ -39,6 +40,19 @@ public class Order {
         this.amountOfProducts = amountOfProducts;
         this.amountOfProductsKinds = amountOfProductsKinds;
 
+    }
+
+    public DTOOrder createDTOOrderFromOrder(){
+        DTOOrder dtoOrder = new DTOOrder(getOrderDate(),
+                getDTOProductsInOrder(),
+                getProductsCost(),
+                getDeliveryCost(),
+                getOrderSerialNumber(),
+                storeFromWhomTheOrderWasMade.createDTOStore(),
+                getAmountOfProducts(),
+                getAmountOfProductsKinds());
+
+        return dtoOrder;
     }
 
 //    public Order(){
