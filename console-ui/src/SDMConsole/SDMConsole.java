@@ -82,10 +82,15 @@ public class SDMConsole {
     }
 
     private void showOrdersHistoryInSystem() {
-        System.out.println("Orders history in system:");
         Collection<DTOOrder> ordersInSystem = sdmSystem.getAllOrders();
-        for(DTOOrder order : ordersInSystem){
-            printOrder(order);
+        if(ordersInSystem.size() >0) {
+            System.out.println("Orders history in system:");
+            for (DTOOrder order : ordersInSystem) {
+                printOrder(order);
+            }
+        }
+        else{
+            System.out.println("There are no any orders yet!");
         }
     }
 
@@ -95,6 +100,12 @@ public class SDMConsole {
         System.out.println("Order date: " + order.getOrderDate());
         System.out.println("Store from whom the order was made serial number: " + order.getStoreFromWhomTheOrderWasMade().getStoreSerialNumber());
         System.out.println("Store name: " + order.getStoreFromWhomTheOrderWasMade().getStoreName());
+        System.out.println("Kinds of products in the order: " + order.getAmountOfProductsKinds());
+        System.out.println("Total number of products in order: " + order.getAmountOfProducts());
+        System.out.println("Total cost of all products:" + order.getProductsCost());
+        System.out.println("Delivery cost: " + order.getDeliveryCost());
+        System.out.println("Total order cost: " + order.getOrderCost());
+        System.out.println("-------------------------------------------------------------------");
     }
 
 
@@ -369,11 +380,13 @@ public class SDMConsole {
     }
 
     private void printDTOOrder(DTOOrder order) {
+        System.out.println("-------------------------------------------------------------------");
         System.out.println("Order Date=" + order.getOrderDate().toString() +
                 "\nNumber of products: " + order.getAmountOfProducts() +
                 "\nProducts cost: " + order.getProductsCost() +
                 "\nDelivery cost: " + order.getDeliveryCost() +
                 "\nOrder cost: " + (order.getProductsCost() + order.getDeliveryCost()));
+        System.out.println("-------------------------------------------------------------------");
     }
 
 

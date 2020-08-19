@@ -44,6 +44,10 @@ public class DTOOrder {
         return amountOfProducts;
     }
 
+    public float getOrderCost(){
+        return deliveryCost + productsCost;
+    }
+
     public int getAmountOfProductsKinds() {
         return amountOfProductsKinds;
     }
