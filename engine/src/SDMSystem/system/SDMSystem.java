@@ -392,9 +392,7 @@ public class SDMSystem {
 
     private Collection<Point> createStoresLocationCollection() {
         Collection<Point> storesLocation = new LinkedList<>();
-        for(Point storeLocation : storesInSystem.getStoresInSystemByLocation().keySet()){
-            storesLocation.add(storeLocation);
-        }
+        storesLocation.addAll(storesInSystem.getStoresInSystemByLocation().keySet());
 
         return storesLocation;
     }

@@ -1,8 +1,6 @@
 package SDMConsole;
 
 import SDMSystem.exceptions.ExistenceException;
-import SDMSystem.product.ProductInStore;
-import SDMSystem.store.Store;
 import SDMSystem.system.SDMSystem;
 import SDMSystemDTO.product.DTOProduct;
 import SDMSystemDTO.product.DTOProductInStore;
@@ -95,14 +93,12 @@ public class SDMConsole {
         System.out.println("-------------------------------------------------------------------");
         System.out.println("Order serial number: " + order.getOrderSerialNumber());
         System.out.println("Order date: " + order.getOrderDate());
-//        System.out.println("Store from whom the order was made serial number: " + order.getStoreFromWhomTheOrderWasMade().getStoreSerialNumber());
-//        System.out.println("Store name: " + order.getStoreFromWhomTheOrderWasMade().getStoreName());
         printStoresFromWhomTheOrderWasMade(order);
         System.out.println("Kinds of products in the order: " + order.getAmountOfProductsKinds());
         System.out.println("Total number of products in order: " + order.getAmountOfProducts());
         System.out.printf("Total cost of all products: %.2f\n",order.getProductsCost());
         System.out.printf("Delivery cost: %.2f\n",order.getDeliveryCost());
-        System.out.printf("Total order cost: %.2f\n ", order.getOrderCost());
+        System.out.printf("Total order cost: %.2f\n", order.getOrderCost());
         System.out.println("-------------------------------------------------------------------");
     }
 
@@ -132,14 +128,12 @@ public class SDMConsole {
     }
 
     private void makeDynamicOrder() {
-        Scanner s = new Scanner(System.in);
         //Pair: amount,product
         Collection<Pair<Float, DTOProduct>> productsInOrder = new LinkedList<>();
         Date orderDate = getOrderDateFromUser();
         Point userLocation = getLocationDifferentFromStores();
         System.out.println("Please choose the products you would like to order:");
-        printAllProductsForDynamicOrder();
-        chooseProducts(productsInOrder);
+        chooseProducts(productsInOrder,true,null);
         //every value in the map is a collection of products from the same store
         //every value in the collection is pair of amount bought and product itself
         Map<Integer, Collection<Pair<Float,DTOProductInStore>>> cheapestBasket = sdmSystem.getCheapestBasket(productsInOrder);
@@ -154,6 +148,7 @@ public class SDMConsole {
         for(Integer storeSerialNumber : cheapestBasket.keySet()){
             DTOStore storeSellingTheProducts = sdmSystem.getStoreFromStores(storeSerialNumber);
             System.out.println("-------------------------------------------------------------------");
+            System.out.println("Stores you are buying from:");
             printStoreIdAndName(storeSerialNumber,storeSellingTheProducts.getStoreName());
             printStoreCoordinate(storeSellingTheProducts.getStoreLocation());
             deliveryCost = sdmSystem.getDeliveryCost(storeSellingTheProducts.getStoreSerialNumber(),userLocation);
@@ -195,9 +190,7 @@ public class SDMConsole {
                 if (chosenStore != null) {
                     Date orderDate = getOrderDateFromUser();
                     Point userLocation = getLocationDifferentFromStores();
-                    //if (userLocation != null) {
-                    printAllProductsForOrderFromStore(chosenStore);
-                    chooseProducts(productsInOrder);
+                    chooseProducts(productsInOrder,false,chosenStore);
                     deliveryCost = sdmSystem.getDeliveryCost(chosenStore.getStoreSerialNumber(), userLocation);
                     if (productsInOrder.size() >= 1) {
                         Collection<Pair<Float, DTOProductInStore>> productsInOrderAsProductInStoreObj = createProductInStoreCollection(chosenStore,productsInOrder);
@@ -280,21 +273,32 @@ public class SDMConsole {
         return res;
     }
 
-    private void chooseProducts(Collection<Pair<Float,DTOProduct>> productsInOrder) {
+    private void chooseProducts(Collection<Pair<Float,DTOProduct>> productsInOrder, boolean isDynamic, DTOStore chosenStore) {
         Scanner s = new Scanner(System.in);
         float amountToBuy;
+        DTOProduct chosenProduct;
         boolean finished = false;
         while (!finished) {
             try {
+                if(isDynamic){
+                    printAllProductsForDynamicOrder();
+                }
+                else{
+                    printAllProductsForOrderFromStore(chosenStore);
+                }
                 System.out.println("Choose a product by entering its serial number. insert 'q' if finished");
                 String answer = s.nextLine();
                 if(!Validation.isQ(answer)) {
                     int chosenProductSerialNumber = Integer.parseInt(answer);
-                    //DTOProductInStore chosenProduct = sdmSystem.getProductFromStore(chosenProductSerialNumber, chosenStore.getStoreSerialNumber());
-                    DTOProduct chosenProduct = sdmSystem.getProductFromSystem(chosenProductSerialNumber);
+                    if(isDynamic){
+                        chosenProduct = sdmSystem.getProductFromSystem(chosenProductSerialNumber);
+                    }
+                    else {
+                        chosenProduct = sdmSystem.getProductFromStore(chosenProductSerialNumber, chosenStore.getStoreSerialNumber());
+                    }
                     if(chosenProduct != null) {
                         amountToBuy = getAmountToBuy(chosenProduct);
-                        productsInOrder.add(new Pair<Float, DTOProduct>(amountToBuy, chosenProduct));
+                        productsInOrder.add(new Pair<>(amountToBuy, chosenProduct));
                     }
                     else{
                         System.out.println("There are no such product! Please try again!");
@@ -312,16 +316,6 @@ public class SDMConsole {
 
     }
 
-    private boolean askIfShowProductsAgain() {
-        System.out.println("Would you like to view the products in the store again? insert Y\\N");
-        return Validation.getValidYesOrNoAnswer();
-    }
-
-    private boolean askIfFinishedOrdering() {
-        System.out.println("Would you like to order another product? insert Y\\N");
-        return Validation.getValidYesOrNoAnswer();
-    }
-
     private float getAmountToBuy(DTOProduct chosenProduct) {
         float amountToBuy;
         if (chosenProduct.getWayOfBuying() == WayOfBuying.BY_QUANTITY) {
@@ -337,7 +331,6 @@ public class SDMConsole {
 
     private void printAllProductsForOrderFromStore(DTOStore chosenStore) {
         System.out.println("The products from store " + chosenStore.getStoreSerialNumber() + ":");
-        ProductInStore productInChosenStore;
         for (DTOProduct product : sdmSystem.getProductsInSystem().values()) {
             System.out.println("-------------------------------------------------------------------");
             System.out.println("Product serial number: " + product.getProductSerialNumber());
