@@ -11,7 +11,6 @@ import SDMSystemDTO.product.DTOProductInStore;
 import SDMSystemDTO.store.DTOOrder;
 import SDMSystemDTO.store.DTOStore;
 import SDMSystemDTO.product.WayOfBuying;
-import com.sun.javafx.binding.StringFormatter;
 import javafx.util.Pair;
 import xml.generated.*;
 
@@ -178,14 +177,96 @@ public class SDMSystem {
                                    Date orderDate,
                                    float deliveryCost,
                                    Collection<Pair<Float,DTOProductInStore>> dtoProductsInOrder) {
-        Store storeWithNewOrder = storesInSystem.getStoreInSystem(chosenStore.getStoreSerialNumber());
         Collection<Pair<Float,ProductInStore>> productsInOrder = createProductsInOrderCollectionFromDTO(dtoProductsInOrder);
-        //storeWithNewOrder.makeNewOrderAndAddToOrdersIsSystem(orderDate,deliveryCost,productsInOrder,ordersInSystem);
-        Order newOrder = createdNewOrderObject(orderDate,deliveryCost,productsInOrder);
-        storeWithNewOrder.addOrder(newOrder,deliveryCost);
+        Order newOrder = makeOrderAndAddToStore(chosenStore.getStoreSerialNumber(), orderDate, deliveryCost, productsInOrder);
         updateAmountsSoldOfProduct(productsInOrder);
         ordersInSystem.put(newOrder.getOrderSerialNumber(),newOrder);
-        //storeWithNewOrder.increaseTotalProfitFromDelivery(deliveryCost);
+    }
+
+    private Order makeOrderAndAddToStore(int storeSerialNumber, Date orderDate, float deliveryCost, Collection<Pair<Float, ProductInStore>> productsInOrder) {
+        Store storeWithNewOrder = storesInSystem.getStoreInSystem(storeSerialNumber);
+        Order newOrder = createdNewOrderObject(orderDate, deliveryCost,productsInOrder);
+        storeWithNewOrder.addOrder(newOrder, deliveryCost);
+        return newOrder;
+    }
+
+    public void makeNewDynamicOrder(Date orderDate,
+                                    Point userLocation,
+                                    Map<Integer, Collection<Pair<Float, DTOProductInStore>>> cheapestBasketDTO) {
+        Collection<Order> subOrders = new LinkedList<>();
+        float totalDeliveryCost;
+        //int[0] = amount of products
+        //int[1] = amount of products kinds
+        int[] amountOfProductsAndKinds = new int[2];
+        makeSubOrderToEachStore(orderDate, userLocation, cheapestBasketDTO, subOrders);
+        totalDeliveryCost = calcTotalDeliveryCostInDynamicOrder(subOrders);
+        Collection<Pair<Float,ProductInStore>> allProductsInOrder = getAllProductsFromSubOrdersAndAmountOfProductsAndKinds(subOrders,amountOfProductsAndKinds);
+        Map<Integer,Store> storesSellingTheProducts = getStoresSellingTheProductsFromBasket(cheapestBasketDTO);
+        Order dynamicOrder = new Order(orderDate,
+                allProductsInOrder,
+                calcProductsCost(allProductsInOrder),
+                totalDeliveryCost,
+                storesSellingTheProducts,
+                amountOfProductsAndKinds[0],
+                amountOfProductsAndKinds[1],
+                subOrders);
+        updateAmountsSoldOfProduct(allProductsInOrder);
+        ordersInSystem.put(dynamicOrder.getOrderSerialNumber(),dynamicOrder);
+    }
+
+    private Map<Integer, Store> getStoresSellingTheProductsFromBasket(Map<Integer, Collection<Pair<Float, DTOProductInStore>>> cheapestBasketDTO) {
+        Map<Integer,Store> storesSellingTheProducts = new HashMap<>();
+        for(Integer storeSerialNumber : cheapestBasketDTO.keySet()){
+            storesSellingTheProducts.put(storeSerialNumber,storesInSystem.getStoreInSystem(storeSerialNumber));
+        }
+
+        return storesSellingTheProducts;
+    }
+
+    private Collection<Pair<Float,ProductInStore>> getAllProductsFromSubOrdersAndAmountOfProductsAndKinds(Collection<Order> subOrders, int[] amountOfProductsAndKinds) {
+        Collection<Pair<Float,ProductInStore>> allProductsInOrder = new LinkedList<>();
+        amountOfProductsAndKinds[0] = amountOfProductsAndKinds[1] = 0;
+        for(Order order : subOrders) {
+            for(Pair<Float,ProductInStore> productInOrder : order.getProductsInOrder()){
+                //update amount of products
+                if(productInOrder.getValue().getWayOfBuying() == WayOfBuying.BY_QUANTITY){
+                    amountOfProductsAndKinds[0] += productInOrder.getKey();
+                }
+                else{
+                    amountOfProductsAndKinds[0]++;
+                }
+                amountOfProductsAndKinds[1]++; //update amount of products kinds
+                allProductsInOrder.add(productInOrder);
+            }
+        }
+
+        return allProductsInOrder;
+    }
+
+    private float calcTotalDeliveryCostInDynamicOrder(Collection<Order> subOrders) {
+        float totalDeliveryCost = 0;
+        for(Order order : subOrders) {
+            totalDeliveryCost += order.getDeliveryCost();
+        }
+
+        return totalDeliveryCost;
+    }
+
+    private void makeSubOrderToEachStore(Date orderDate,
+                                         Point userLocation,
+                                         Map<Integer, Collection<Pair<Float, DTOProductInStore>>> cheapestBasketDTO,
+                                         Collection<Order> subOrders) {
+        Order subOrder;
+        float deliveryCost;
+        for(Integer storeSerialNumber : cheapestBasketDTO.keySet()){
+            //Store storeSellingTheProducts = storesInSystem.getStoreInSystem(storeSerialNumber);
+            deliveryCost = getDeliveryCost(storeSerialNumber, userLocation);
+            subOrder = makeOrderAndAddToStore(storeSerialNumber,
+                    orderDate,
+                    deliveryCost,
+                    createProductsInOrderCollectionFromDTO(cheapestBasketDTO.get(storeSerialNumber)));
+            subOrders.add(subOrder);
+        }
     }
 
     private Order createdNewOrderObject(Date orderDate,
@@ -266,8 +347,8 @@ public class SDMSystem {
         return productsInSystem.get(productSerialNumber).numberOfStoresSellingTheProduct();
     }
 
-    public float getDeliveryCost(DTOStore chosenStore, Point locationFromTheUser) {
-        Store store = storesInSystem.getStoreInSystem(chosenStore.getStoreSerialNumber());
+    public float getDeliveryCost(int storeSerialNumber, Point locationFromTheUser) {
+        Store store = storesInSystem.getStoreInSystem(storeSerialNumber);
         return store.getDeliveryCost(locationFromTheUser);
     }
 
@@ -304,9 +385,9 @@ public class SDMSystem {
         return dtoProduct;
     }
 
-    public boolean checkIfLocationIsUnic(Point userLocation) {
+    public boolean checkIfLocationIsUnique(Point userLocation) {
         Collection<Point> storesLocation = createStoresLocationCollection();
-        return LocationValidation.checkIfUnicLocation(userLocation,storesLocation);
+        return LocationValidation.checkIfUniqueLocation(userLocation,storesLocation);
     }
 
     private Collection<Point> createStoresLocationCollection() {
@@ -317,4 +398,48 @@ public class SDMSystem {
 
         return storesLocation;
     }
+
+    public Map<Integer, Collection<Pair<Float,DTOProductInStore>>> getCheapestBasket(Collection<Pair<Float, DTOProduct>> productsInOrder) {
+        Map<Integer, Collection<Pair<Float,DTOProductInStore>>> cheapestBasket = new HashMap<>();
+        Collection <Pair<Float,DTOProductInStore>> productsFromSameStore;
+        int storeWithCheapestProductSerialNumber;
+        for(Pair<Float, DTOProduct> dtoProductInOrder : productsInOrder){
+            ProductInStore cheapestProduct = findCheapestProduct(dtoProductInOrder.getValue().getProductSerialNumber());
+            DTOProductInStore cheapestProductAsDTO = cheapestProduct.createDTOProductInStore();
+            storeWithCheapestProductSerialNumber = cheapestProduct.getStoreTheProductBelongs().getSerialNumber();
+            //If there is already a product from this store in the basket
+            if(cheapestBasket.containsKey(storeWithCheapestProductSerialNumber)){
+                productsFromSameStore = cheapestBasket.get(storeWithCheapestProductSerialNumber);
+                productsFromSameStore.add(new Pair(dtoProductInOrder.getKey(),cheapestProductAsDTO));
+            }
+            else{
+                productsFromSameStore = new LinkedList<>();
+                productsFromSameStore.add(new Pair(dtoProductInOrder.getKey(),cheapestProductAsDTO));
+                cheapestBasket.put(storeWithCheapestProductSerialNumber,productsFromSameStore);
+            }
+        }
+
+        return cheapestBasket;
+    }
+
+    private ProductInStore findCheapestProduct(int productSerialNumber) {
+        ProductInStore currCheapestProduct = null;
+        for(Store store : storesInSystem.getStoresInSystemBySerialNumber().values()){
+            if(store.isAvailableInStore(productSerialNumber)) {
+                ProductInStore productInStore = store.getProductInStore(productSerialNumber);
+                if(currCheapestProduct == null){
+                    currCheapestProduct = productInStore;
+                }
+                else{
+                    if(productInStore.getPrice() < currCheapestProduct.getPrice()){
+                        currCheapestProduct = productInStore;
+                    }
+                }
+            }
+        }
+
+        return currCheapestProduct;
+    }
+
+
 }

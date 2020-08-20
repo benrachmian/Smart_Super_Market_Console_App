@@ -13,7 +13,7 @@ public class LocationValidation {
         }
     }
 
-    public static boolean checkIfUnicLocation(Point targetLocation, Collection<Point> othersLocation) {
+    public static boolean checkIfUniqueLocation(Point targetLocation, Collection<Point> othersLocation) {
         boolean res = true;
         for(Point location : othersLocation){
             if (location.equals(targetLocation)){

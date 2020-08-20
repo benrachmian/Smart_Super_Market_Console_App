@@ -2,6 +2,7 @@ package SDMConsole;
 
 import SDMSystem.exceptions.ExistenceException;
 import SDMSystem.product.ProductInStore;
+import SDMSystem.store.Store;
 import SDMSystem.system.SDMSystem;
 import SDMSystemDTO.product.DTOProduct;
 import SDMSystemDTO.product.DTOProductInStore;
@@ -96,12 +97,24 @@ public class SDMConsole {
         System.out.println("Order date: " + order.getOrderDate());
 //        System.out.println("Store from whom the order was made serial number: " + order.getStoreFromWhomTheOrderWasMade().getStoreSerialNumber());
 //        System.out.println("Store name: " + order.getStoreFromWhomTheOrderWasMade().getStoreName());
+        printStoresFromWhomTheOrderWasMade(order);
         System.out.println("Kinds of products in the order: " + order.getAmountOfProductsKinds());
         System.out.println("Total number of products in order: " + order.getAmountOfProducts());
         System.out.printf("Total cost of all products: %.2f\n",order.getProductsCost());
         System.out.printf("Delivery cost: %.2f\n",order.getDeliveryCost());
         System.out.printf("Total order cost: %.2f\n ", order.getOrderCost());
         System.out.println("-------------------------------------------------------------------");
+    }
+
+    private void printStoresFromWhomTheOrderWasMade(DTOOrder order) {
+        int countStores = 1;
+        System.out.println("Stores from whom the order was made: ");
+        for(DTOStore store : order.getStoreFromWhomTheOrderWasMade()){
+            System.out.printf("%d. Store serial number: %d\n   Store name: %s\n",
+                    countStores++,
+                    store.getStoreSerialNumber(),
+                    store.getStoreName());
+        }
     }
 
     private void makeOrder(){
@@ -125,10 +138,37 @@ public class SDMConsole {
         Date orderDate = getOrderDateFromUser();
         Point userLocation = getLocationDifferentFromStores();
         System.out.println("Please choose the products you would like to order:");
-
         printAllProductsForDynamicOrder();
         chooseProducts(productsInOrder);
+        //every value in the map is a collection of products from the same store
+        //every value in the collection is pair of amount bought and product itself
+        Map<Integer, Collection<Pair<Float,DTOProductInStore>>> cheapestBasket = sdmSystem.getCheapestBasket(productsInOrder);
+        showSummeryOfDynamicOrder(cheapestBasket, userLocation);
+        if(askIfConfirmOrder()){
+            sdmSystem.makeNewDynamicOrder(orderDate,userLocation,cheapestBasket);
+        }
+    }
 
+    private void showSummeryOfDynamicOrder(Map<Integer, Collection<Pair<Float, DTOProductInStore>>> cheapestBasket, Point userLocation) {
+        float deliveryCost;
+        for(Integer storeSerialNumber : cheapestBasket.keySet()){
+            DTOStore storeSellingTheProducts = sdmSystem.getStoreFromStores(storeSerialNumber);
+            System.out.println("-------------------------------------------------------------------");
+            printStoreIdAndName(storeSerialNumber,storeSellingTheProducts.getStoreName());
+            printStoreCoordinate(storeSellingTheProducts.getStoreLocation());
+            deliveryCost = sdmSystem.getDeliveryCost(storeSellingTheProducts.getStoreSerialNumber(),userLocation);
+            printDistanceFromStoreAndPpkAndDeliveryCost(storeSellingTheProducts,userLocation,deliveryCost);
+            //the size of the collection is the number of kinds
+            System.out.println("Number of products kinds bought from store: " + cheapestBasket.get(storeSerialNumber).size());
+            System.out.println("The cost of the products bought from store: " + calcProductsInOrderCost(cheapestBasket.get(storeSerialNumber)));
+            System.out.println("-------------------------------------------------------------------");
+        }
+    }
+
+    private void printStoreCoordinate(Point storeLocation) {
+        System.out.println("The store coordinates are:");
+        System.out.println("X: " + storeLocation.x);
+        System.out.println("Y: " + storeLocation.y);
     }
 
     private void printAllProductsForDynamicOrder() {
@@ -158,10 +198,10 @@ public class SDMConsole {
                     //if (userLocation != null) {
                     printAllProductsForOrderFromStore(chosenStore);
                     chooseProducts(productsInOrder);
-                    deliveryCost = sdmSystem.getDeliveryCost(chosenStore, userLocation);
+                    deliveryCost = sdmSystem.getDeliveryCost(chosenStore.getStoreSerialNumber(), userLocation);
                     if (productsInOrder.size() >= 1) {
                         Collection<Pair<Float, DTOProductInStore>> productsInOrderAsProductInStoreObj = createProductInStoreCollection(chosenStore,productsInOrder);
-                        showSummeryOfOrder(chosenStore, productsInOrderAsProductInStoreObj, deliveryCost, userLocation);
+                        showSummeryOfStaticOrder(chosenStore, productsInOrderAsProductInStoreObj, deliveryCost, userLocation);
                         if (askIfConfirmOrder()) {
                             sdmSystem.makeNewStaticOrder(chosenStore, orderDate, deliveryCost, productsInOrderAsProductInStoreObj);
                             System.out.println("The order was made successfully!");
@@ -186,7 +226,7 @@ public class SDMConsole {
 
     private Point getLocationDifferentFromStores() {
         Point userLocation = getLocationFromTheUser();
-        while (!sdmSystem.checkIfLocationIsUnic(userLocation)) {
+        while (!sdmSystem.checkIfLocationIsUnique(userLocation)) {
             System.out.println("The location must be different from all stores location!");
             userLocation = getLocationFromTheUser();
         }
@@ -208,10 +248,10 @@ public class SDMConsole {
         return Validation.getValidYesOrNoAnswer();
     }
 
-    private void showSummeryOfOrder(DTOStore chosenStore,
-                                    Collection<Pair<Float, DTOProductInStore>> productsInOrder,
-                                    float deliveryCost,
-                                    Point userLocation) {
+    private void showSummeryOfStaticOrder(DTOStore chosenStore,
+                                          Collection<Pair<Float, DTOProductInStore>> productsInOrder,
+                                          float deliveryCost,
+                                          Point userLocation) {
         System.out.println("-------------------------------------------------------------------");
         System.out.println("Summery of order:" );
         for(Pair<Float, DTOProductInStore> productInOrder : productsInOrder){
@@ -221,10 +261,14 @@ public class SDMConsole {
             System.out.println("Total amount of product: " + productInOrder.getValue().getPrice() * productInOrder.getKey());
             System.out.println("-------------------------------------------------------------------");
         }
-        System.out.printf("Distance from store: %.2f\n",sdmSystem.getDistanceFromStore(chosenStore,userLocation));
-        System.out.println("Store ppk: " + chosenStore.getPpk());
-        System.out.printf("Delivery cost: %.2f\n", deliveryCost );
+        printDistanceFromStoreAndPpkAndDeliveryCost(chosenStore,userLocation,deliveryCost);
         System.out.printf("Total order cost: %.2f\n" ,(deliveryCost + calcProductsInOrderCost(productsInOrder)));
+    }
+
+    private void printDistanceFromStoreAndPpkAndDeliveryCost(DTOStore store, Point userLocation, float deliveryCost){
+        System.out.printf("Distance from store: %.2f\n",sdmSystem.getDistanceFromStore(store,userLocation));
+        System.out.println("Store ppk: " + store.getPpk());
+        System.out.printf("Delivery cost: %.2f\n", deliveryCost );
     }
 
     private float calcProductsInOrderCost(Collection<Pair<Float, DTOProductInStore>> productsInOrder) {
@@ -300,12 +344,11 @@ public class SDMConsole {
             System.out.println("Product name: " + product.getProductName());
             System.out.println("Way of buying: " + product.getWayOfBuying());
             System.out.print("Price: ");
-            //if(!chosenStore.isAvailableInStore(product.getSerialNumber())){
             if (!sdmSystem.isAvailableInStore(chosenStore.getStoreSerialNumber(), product.getProductSerialNumber())) {
                 System.out.println("The product is not available in that store!");
             } else {
-                //System.out.println(chosenStore.getProductInStore(product.getSerialNumber()).getPrice());
-                System.out.println(sdmSystem.getProductPrice(chosenStore.getStoreSerialNumber(),product.getProductSerialNumber()));
+                System.out.println(sdmSystem.getProductPrice(chosenStore.getStoreSerialNumber(),
+                        product.getProductSerialNumber()));
             }
             System.out.println("-------------------------------------------------------------------");
         }
@@ -369,10 +412,14 @@ public class SDMConsole {
         System.out.println("The stores in the system are:");
         for(DTOStore store : storesInSystem.values()){
             System.out.println("-------------------------------------------------------------------");
-            System.out.println("Store serial number: " + store.getStoreSerialNumber());
-            System.out.println("Store name: " + store.getStoreName());
+            printStoreIdAndName(store.getStoreSerialNumber(),store.getStoreName());
             System.out.println("Store PPK: " + store.getPpk());
         }
+    }
+
+    private void printStoreIdAndName(int storeSerialNumber,String storeName) {
+        System.out.println("Store serial number: " + storeSerialNumber);
+        System.out.println("Store name: " + storeName);
     }
 
     private boolean loadFileToSystem() {
