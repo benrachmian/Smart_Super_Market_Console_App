@@ -123,7 +123,7 @@ public class SDMConsole {
         //Pair: amount,product
         Collection<Pair<Float, DTOProduct>> productsInOrder = new LinkedList<>();
         Date orderDate = getOrderDateFromUser();
-        Point userLocation = getLocationFromTheUser();
+        Point userLocation = getLocationDifferentFromStores();
         System.out.println("Please choose the products you would like to order:");
 
         printAllProductsForDynamicOrder();
@@ -154,7 +154,7 @@ public class SDMConsole {
                 DTOStore chosenStore = sdmSystem.getStoreFromStores(chosenStoreSerialNumber);
                 if (chosenStore != null) {
                     Date orderDate = getOrderDateFromUser();
-                    Point userLocation = getLocationDifferentFromStore(chosenStore.getStoreLocation());
+                    Point userLocation = getLocationDifferentFromStores();
                     //if (userLocation != null) {
                     printAllProductsForOrderFromStore(chosenStore);
                     chooseProducts(productsInOrder);
@@ -184,10 +184,10 @@ public class SDMConsole {
         while (!succeeded);
     }
 
-    private Point getLocationDifferentFromStore(Point storeLocation) {
+    private Point getLocationDifferentFromStores() {
         Point userLocation = getLocationFromTheUser();
-        while ((userLocation.x == storeLocation.x && userLocation.y == storeLocation.y)) {
-            System.out.println("The location can't be the same as the store location!");
+        while (!sdmSystem.checkIfLocationIsUnic(userLocation)) {
+            System.out.println("The location must be different from all stores location!");
             userLocation = getLocationFromTheUser();
         }
 

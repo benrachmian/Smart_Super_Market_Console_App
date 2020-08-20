@@ -11,6 +11,7 @@ import SDMSystemDTO.product.DTOProductInStore;
 import SDMSystemDTO.store.DTOOrder;
 import SDMSystemDTO.store.DTOStore;
 import SDMSystemDTO.product.WayOfBuying;
+import com.sun.javafx.binding.StringFormatter;
 import javafx.util.Pair;
 import xml.generated.*;
 
@@ -90,6 +91,9 @@ public class SDMSystem {
             Product productToLoad = productsInSystem.get(sdmSell.getItemId());
             if(productToLoad == null){
                 throw new ExistenceException(false,sdmSell.getItemId(),"Product", "System");
+            }
+            else if(sdmSell.getPrice() <=0){
+                throw new RuntimeException(String.format("The price of products %d must be a positive number!",sdmSell.getItemId()));
             }
             loadedStore.addNewProductToStore(productToLoad,sdmSell.getPrice());
         }
@@ -298,5 +302,19 @@ public class SDMSystem {
             dtoProduct = chosenProduct.createDTOProduct();
         }
         return dtoProduct;
+    }
+
+    public boolean checkIfLocationIsUnic(Point userLocation) {
+        Collection<Point> storesLocation = createStoresLocationCollection();
+        return LocationValidation.checkIfUnicLocation(userLocation,storesLocation);
+    }
+
+    private Collection<Point> createStoresLocationCollection() {
+        Collection<Point> storesLocation = new LinkedList<>();
+        for(Point storeLocation : storesInSystem.getStoresInSystemByLocation().keySet()){
+            storesLocation.add(storeLocation);
+        }
+
+        return storesLocation;
     }
 }

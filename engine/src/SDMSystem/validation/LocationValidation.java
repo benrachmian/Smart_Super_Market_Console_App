@@ -1,6 +1,8 @@
 package SDMSystem.validation;
 
 import java.awt.*;
+import java.util.Collection;
+
 import SDMSystem.exceptions.*;
 
 public class LocationValidation {
@@ -11,4 +13,15 @@ public class LocationValidation {
         }
     }
 
+    public static boolean checkIfUnicLocation(Point targetLocation, Collection<Point> othersLocation) {
+        boolean res = true;
+        for(Point location : othersLocation){
+            if (location.equals(targetLocation)){
+                res = false;
+                break;
+            }
+        }
+
+        return res;
+    }
 }
