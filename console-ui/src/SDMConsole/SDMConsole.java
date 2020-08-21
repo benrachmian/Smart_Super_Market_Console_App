@@ -134,30 +134,40 @@ public class SDMConsole {
         Point userLocation = getLocationDifferentFromStores();
         System.out.println("Please choose the products you would like to order:");
         chooseProducts(productsInOrder,true,null);
-        //every value in the map is a collection of products from the same store
-        //every value in the collection is pair of amount bought and product itself
+        //key in map: store id. value in map:a collection of products from the same store
+        //key in pair:amount bought. value in pair: the product itself
         Map<Integer, Collection<Pair<Float,DTOProductInStore>>> cheapestBasket = sdmSystem.getCheapestBasket(productsInOrder);
         showSummeryOfDynamicOrder(cheapestBasket, userLocation);
         if(askIfConfirmOrder()){
             sdmSystem.makeNewDynamicOrder(orderDate,userLocation,cheapestBasket);
+            System.out.println("The order was made successfully!");
         }
     }
 
     private void showSummeryOfDynamicOrder(Map<Integer, Collection<Pair<Float, DTOProductInStore>>> cheapestBasket, Point userLocation) {
         float deliveryCost;
-        for(Integer storeSerialNumber : cheapestBasket.keySet()){
+        float totalDeliveryCost = 0;
+        float costOfProductsInStore = 0;
+        float totalCostOfProductsInStore = 0;
+        System.out.println("Stores you are buying from:");
+        for (Integer storeSerialNumber : cheapestBasket.keySet()) {
             DTOStore storeSellingTheProducts = sdmSystem.getStoreFromStores(storeSerialNumber);
             System.out.println("-------------------------------------------------------------------");
-            System.out.println("Stores you are buying from:");
-            printStoreIdAndName(storeSerialNumber,storeSellingTheProducts.getStoreName());
+            printStoreIdAndName(storeSerialNumber, storeSellingTheProducts.getStoreName());
             printStoreCoordinate(storeSellingTheProducts.getStoreLocation());
-            deliveryCost = sdmSystem.getDeliveryCost(storeSellingTheProducts.getStoreSerialNumber(),userLocation);
-            printDistanceFromStoreAndPpkAndDeliveryCost(storeSellingTheProducts,userLocation,deliveryCost);
+            deliveryCost = sdmSystem.getDeliveryCost(storeSellingTheProducts.getStoreSerialNumber(), userLocation);
+            totalDeliveryCost += deliveryCost;
+            printDistanceFromStoreAndPpkAndDeliveryCost(storeSellingTheProducts, userLocation, deliveryCost);
             //the size of the collection is the number of kinds
             System.out.println("Number of products kinds bought from store: " + cheapestBasket.get(storeSerialNumber).size());
-            System.out.println("The cost of the products bought from store: " + calcProductsInOrderCost(cheapestBasket.get(storeSerialNumber)));
+            costOfProductsInStore = sdmSystem.calcProductsInOrderCost(cheapestBasket.get(storeSerialNumber));
+            totalCostOfProductsInStore += costOfProductsInStore;
+            System.out.println("The cost of the products bought from store: " + costOfProductsInStore);
             System.out.println("-------------------------------------------------------------------");
         }
+        System.out.printf("Total delivery cost: %.2f\n", (totalDeliveryCost));
+        System.out.printf("Total products cost: %.2f\n", (totalCostOfProductsInStore));
+        System.out.printf("Total order cost: %.2f\n", (totalDeliveryCost + totalCostOfProductsInStore));
     }
 
     private void printStoreCoordinate(Point storeLocation) {
@@ -255,7 +265,7 @@ public class SDMConsole {
             System.out.println("-------------------------------------------------------------------");
         }
         printDistanceFromStoreAndPpkAndDeliveryCost(chosenStore,userLocation,deliveryCost);
-        System.out.printf("Total order cost: %.2f\n" ,(deliveryCost + calcProductsInOrderCost(productsInOrder)));
+        System.out.printf("Total order cost: %.2f\n" ,(deliveryCost + sdmSystem.calcProductsInOrderCost(productsInOrder)));
     }
 
     private void printDistanceFromStoreAndPpkAndDeliveryCost(DTOStore store, Point userLocation, float deliveryCost){
@@ -264,14 +274,14 @@ public class SDMConsole {
         System.out.printf("Delivery cost: %.2f\n", deliveryCost );
     }
 
-    private float calcProductsInOrderCost(Collection<Pair<Float, DTOProductInStore>> productsInOrder) {
-        float res = 0;
-        for(Pair<Float, DTOProductInStore> dtoProductInorder : productsInOrder){
-            res += (dtoProductInorder.getValue().getPrice() * dtoProductInorder.getKey());
-        }
-
-        return res;
-    }
+//    private float calcProductsInOrderCost(Collection<Pair<Float, DTOProductInStore>> productsInOrder) {
+//        float res = 0;
+//        for(Pair<Float, DTOProductInStore> dtoProductInorder : productsInOrder){
+//            res += (dtoProductInorder.getValue().getPrice() * dtoProductInorder.getKey());
+//        }
+//
+//        return res;
+//    }
 
     private void chooseProducts(Collection<Pair<Float,DTOProduct>> productsInOrder, boolean isDynamic, DTOStore chosenStore) {
         Scanner s = new Scanner(System.in);

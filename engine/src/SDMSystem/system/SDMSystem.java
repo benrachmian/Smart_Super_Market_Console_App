@@ -243,6 +243,15 @@ public class SDMSystem {
         return allProductsInOrder;
     }
 
+    public float calcProductsInOrderCost(Collection<Pair<Float, DTOProductInStore>> productsInOrder) {
+        float res = 0;
+        for(Pair<Float, DTOProductInStore> dtoProductInorder : productsInOrder){
+            res += (dtoProductInorder.getValue().getPrice() * dtoProductInorder.getKey());
+        }
+
+        return res;
+    }
+
     private float calcTotalDeliveryCostInDynamicOrder(Collection<Order> subOrders) {
         float totalDeliveryCost = 0;
         for(Order order : subOrders) {
