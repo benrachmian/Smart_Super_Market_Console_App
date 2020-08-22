@@ -482,4 +482,9 @@ public class SDMSystem {
         Product productToAdd = productsInSystem.get(productToAddDTO.getProductSerialNumber());
         storeToUpdate.addNewProductToStore(productToAdd,productPrice);
     }
+
+    public void updateProductPrice(DTOStore storeToUpdateDTO, DTOProductInStore chosenProductToUpdateDTO, float newPrice) {
+        Store storeToUpdate = storesInSystem.getStoreInSystem(storeToUpdateDTO.getStoreSerialNumber());
+        storeToUpdate.updateProductPrice(chosenProductToUpdateDTO.getProductSerialNumber(),newPrice);
+    }
 }

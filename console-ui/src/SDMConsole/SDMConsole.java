@@ -89,14 +89,32 @@ public class SDMConsole {
                 break;
             case 2:
                 addProductToStore(storeToUpdate);
+            case 3:
+                chooseProductAndUpdateItsPrice(storeToUpdate);
         }
+    }
+
+    private void chooseProductAndUpdateItsPrice(DTOStore storeToUpdate) {
+        DTOProductInStore chosenProductToUpdate = chooseProductToUpdateItsPrice(storeToUpdate);
+        System.out.println("Please insert the product's new price:");
+        float newPrice = Validation.getValidPositiveNumber();
+        sdmSystem.updateProductPrice(storeToUpdate,chosenProductToUpdate,newPrice);
+        System.out.printf("The product: %s, ID: %d changed successfully!\n",
+                chosenProductToUpdate.getProductName(),
+                chosenProductToUpdate.getProductSerialNumber());
+    }
+
+    private DTOProductInStore chooseProductToUpdateItsPrice(DTOStore storeToUpdate) {
+        printProductsInStore(storeToUpdate);
+        System.out.println("Please choose a product you would like to change its price by inserting its serial number: ");
+        return Validation.chooseValidProductFromStore(storeToUpdate);
     }
 
     private void addProductToStore(DTOStore storeToUpdate) {
         try {
             Map<Integer,DTOProduct> productsTheStoreDoesntSell = sdmSystem.getProductsTheStoreDoesntSell(storeToUpdate);
             DTOProduct chosenProduct = chooseProductToAdd(productsTheStoreDoesntSell);
-            float productPrice = askForProductPrice();
+            float productPrice = askForAddedProductPrice();
             sdmSystem.addProductToStore(storeToUpdate,chosenProduct,productPrice);
             System.out.println("The product was added successfully!");
         }
@@ -106,7 +124,7 @@ public class SDMConsole {
 
     }
 
-    private float askForProductPrice() {
+    private float askForAddedProductPrice() {
         System.out.println("Please enter the price of the product you would like to add: ");
         return Validation.getValidPositiveNumber();
     }

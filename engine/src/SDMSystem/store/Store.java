@@ -262,4 +262,9 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
         productsInStore.remove(productToDelete.getSerialNumber());
         productToDelete.deleteStoreFromStoresSellingTheProduct(this);
     }
+
+    public void updateProductPrice(int productSerialNumber, float newPrice) {
+        ProductInStore productToUpdate = productsInStore.get(productSerialNumber);
+        productToUpdate.setPrice(newPrice);
+    }
 }
