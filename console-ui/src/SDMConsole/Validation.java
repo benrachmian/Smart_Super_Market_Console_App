@@ -1,9 +1,11 @@
 package SDMConsole;
 
 import SDMSystem.system.SDMSystem;
+import SDMSystemDTO.product.DTOProduct;
 import SDMSystemDTO.product.DTOProductInStore;
 import SDMSystemDTO.store.DTOStore;
 
+import java.util.Collection;
 import java.util.InputMismatchException;
 import java.util.Map;
 import java.util.Scanner;
@@ -157,6 +159,32 @@ public class Validation {
                     succeeded = true;
                 } else {
                     System.out.println("No such product in the store! Please try again!");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("You must enter an integer!");
+                s.nextLine();
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                s.nextLine();
+            }
+        }
+        while (!succeeded);
+
+        return chosenProduct;
+    }
+
+    public static DTOProduct chooseValidProductFromProducts(Map<Integer, DTOProduct> productsTheStoreDoesntSell) {
+        DTOProduct chosenProduct = null;
+        Scanner s = new Scanner(System.in);
+        boolean succeeded = false;
+        do {
+            try {
+                int chosenProductSerialNumber = s.nextInt();
+                chosenProduct = productsTheStoreDoesntSell.get(chosenProductSerialNumber);
+                if (chosenProduct != null) {
+                    succeeded = true;
+                } else {
+                    System.out.println("No such product! Please try again!");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("You must enter an integer!");

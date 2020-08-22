@@ -87,6 +87,42 @@ public class SDMConsole {
             case 1:
                 chooseProductFromStoreAndDelete(storeToUpdate);
                 break;
+            case 2:
+                addProductToStore(storeToUpdate);
+        }
+    }
+
+    private void addProductToStore(DTOStore storeToUpdate) {
+        try {
+            Map<Integer,DTOProduct> productsTheStoreDoesntSell = sdmSystem.getProductsTheStoreDoesntSell(storeToUpdate);
+            DTOProduct chosenProduct = chooseProductToAdd(productsTheStoreDoesntSell);
+            float productPrice = askForProductPrice();
+            sdmSystem.addProductToStore(storeToUpdate,chosenProduct,productPrice);
+            System.out.println("The product was added successfully!");
+        }
+        catch (RuntimeException ex){
+            System.out.println(ex.getMessage());
+        }
+
+    }
+
+    private float askForProductPrice() {
+        System.out.println("Please enter the price of the product you would like to add: ");
+        return Validation.getValidPositiveNumber();
+    }
+
+    private DTOProduct chooseProductToAdd(Map<Integer, DTOProduct> productsTheStoreDoesntSell) {
+        System.out.println("The products you can add to store are:");
+        printProducts(productsTheStoreDoesntSell.values());
+        DTOProduct chosenProduct = Validation.chooseValidProductFromProducts(productsTheStoreDoesntSell);
+        return chosenProduct;
+    }
+
+    private void printProducts( Collection<DTOProduct> products) {
+        for (DTOProduct product : products) {
+            System.out.println("-------------------------------------------------------------------");
+            printProduct(product);
+            System.out.println("-------------------------------------------------------------------");
         }
     }
 
@@ -541,7 +577,7 @@ public class SDMConsole {
 
 
     private void printProductsInStore(DTOStore dtoStore) {
-        System.out.printf("The products in store %d are:\n",dtoStore.getStoreSerialNumber());
+        System.out.printf("The products in store %d are:\n\n",dtoStore.getStoreSerialNumber());
         for(DTOProductInStore dtoProductInStore : dtoStore.getProductsInStore().values()) {
             printProductInStore(dtoProductInStore);
         }

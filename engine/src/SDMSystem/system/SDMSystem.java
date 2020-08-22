@@ -33,7 +33,7 @@ public class SDMSystem {
     }
 
 
-    public void addProductToSystem(Product newProduct){
+    private void addProductToSystem(Product newProduct){
         //if already in system throws exception
         if(productsInSystem.putIfAbsent(newProduct.getSerialNumber(),newProduct) != null) {
             throw new ExistenceException(true,newProduct.getSerialNumber(),"Product","System");
@@ -460,5 +460,26 @@ public class SDMSystem {
         }
 
         return deletedSuccessfully;
+    }
+
+    public Map<Integer, DTOProduct> getProductsTheStoreDoesntSell(DTOStore storeToUpdate) {
+        Store targetStore = storesInSystem.getStoreInSystem(storeToUpdate.getStoreSerialNumber());
+        Map<Integer, DTOProduct> productsTheStoreDoesntSell = new HashMap<>();
+        for(Product product : productsInSystem.values()){
+            if(!targetStore.isAvailableInStore(product.getSerialNumber())){
+                productsTheStoreDoesntSell.put(product.getSerialNumber(),product.createDTOProduct());
+            }
+        }
+        if(productsTheStoreDoesntSell.isEmpty()){
+            throw new RuntimeException("The store already selling every product possible!");
+        }
+
+        return productsTheStoreDoesntSell;
+    }
+
+    public void addProductToStore(DTOStore storeToUpdateDTO, DTOProduct productToAddDTO, float productPrice) {
+        Store storeToUpdate = storesInSystem.getStoreInSystem(storeToUpdateDTO.getStoreSerialNumber());
+        Product productToAdd = productsInSystem.get(productToAddDTO.getProductSerialNumber());
+        storeToUpdate.addNewProductToStore(productToAdd,productPrice);
     }
 }
