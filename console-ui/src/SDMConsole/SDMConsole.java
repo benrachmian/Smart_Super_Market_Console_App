@@ -92,7 +92,18 @@ public class SDMConsole {
 
     private void chooseProductFromStoreAndDelete(DTOStore storeToUpdate) {
         printProductsInStore(storeToUpdate);
-        DTOProductInStore chosenProductToDelete ;
+        System.out.println("Please choose a product you would like to delete by inserting its serial number: ");
+        DTOProductInStore chosenProductToDelete = Validation.chooseValidProductFromStore(storeToUpdate);
+        if(sdmSystem.deleteProductFromStore(chosenProductToDelete)){
+            System.out.printf("The product %s ID: %d was deleted successfully!\n",
+                    storeToUpdate.getStoreName(),
+                    storeToUpdate.getStoreSerialNumber());
+        }
+        else{
+            System.out.printf("You can't delete product %d because store %d is the only one selling it!\n",
+                    chosenProductToDelete.getProductSerialNumber(),
+                    storeToUpdate.getStoreSerialNumber());
+        }
     }
 
     private void showUpdateOptions(DTOStore storeToUpdate) {
@@ -499,7 +510,7 @@ public class SDMConsole {
     private void printStoreAndItsProducts(DTOStore dtoStore) {
         System.out.println("Store ID: " + dtoStore.getStoreSerialNumber() +
             "\nStore name: " + dtoStore.getStoreName() +
-            "\nProducts in store:\n");
+            "\n");
         printProductsInStore(dtoStore);
         System.out.println("Orders history: ");
         printDTOStoreOrderHistory(dtoStore);
@@ -530,6 +541,7 @@ public class SDMConsole {
 
 
     private void printProductsInStore(DTOStore dtoStore) {
+        System.out.printf("The products in store %d are:\n",dtoStore.getStoreSerialNumber());
         for(DTOProductInStore dtoProductInStore : dtoStore.getProductsInStore().values()) {
             printProductInStore(dtoProductInStore);
         }

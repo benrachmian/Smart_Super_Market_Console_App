@@ -129,4 +129,8 @@ public class Product implements HasSerialNumber<Integer> {
     public void addStore(Store store){
         storesSellingTheProduct.add(store);
     }
+
+    public void deleteStoreFromStoresSellingTheProduct(Store store) {
+        storesSellingTheProduct.remove(store);
+    }
 }

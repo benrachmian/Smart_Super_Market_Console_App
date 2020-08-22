@@ -257,4 +257,9 @@ public class Store implements Locationable, HasSerialNumber<Integer> {
         ordersFromStore.add(newOrder);
         increaseTotalProfitFromDelivery(deliveryCost);
     }
+
+    public void deleteProduct(ProductInStore productToDelete) {
+        productsInStore.remove(productToDelete.getSerialNumber());
+        productToDelete.deleteStoreFromStoresSellingTheProduct(this);
+    }
 }

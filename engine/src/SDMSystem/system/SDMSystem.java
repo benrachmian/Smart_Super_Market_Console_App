@@ -449,4 +449,16 @@ public class SDMSystem {
     }
 
 
+    public boolean deleteProductFromStore(DTOProductInStore chosenProductToDeleteDTO) {
+        boolean deletedSuccessfully = false;
+        Store storeSellingTheProduct = storesInSystem.getStoreInSystem(chosenProductToDeleteDTO.getStoreTheProductBelongsID());
+        ProductInStore productToDelete = storeSellingTheProduct.getProductInStore(chosenProductToDeleteDTO.getProductSerialNumber());
+        //if more then one store selling the product
+        if(productToDelete.getStoresSellingTheProduct().size() > 1){
+            storeSellingTheProduct.deleteProduct(productToDelete);
+            deletedSuccessfully = true;
+        }
+
+        return deletedSuccessfully;
+    }
 }
