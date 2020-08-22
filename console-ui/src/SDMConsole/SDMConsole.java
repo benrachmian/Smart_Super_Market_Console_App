@@ -137,10 +137,12 @@ public class SDMConsole {
         //key in map: store id. value in map:a collection of products from the same store
         //key in pair:amount bought. value in pair: the product itself
         Map<Integer, Collection<Pair<Float,DTOProductInStore>>> cheapestBasket = sdmSystem.getCheapestBasket(productsInOrder);
-        showSummeryOfDynamicOrder(cheapestBasket, userLocation);
-        if(askIfConfirmOrder()){
-            sdmSystem.makeNewDynamicOrder(orderDate,userLocation,cheapestBasket);
-            System.out.println("The order was made successfully!");
+        if(cheapestBasket.size() >= 1) {
+            showSummeryOfDynamicOrder(cheapestBasket, userLocation);
+            if (askIfConfirmOrder()) {
+                sdmSystem.makeNewDynamicOrder(orderDate, userLocation, cheapestBasket);
+                System.out.println("The order was made successfully!");
+            }
         }
     }
 
