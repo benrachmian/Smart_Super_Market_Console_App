@@ -1,6 +1,10 @@
 package SDMConsole;
 
+import SDMSystem.system.SDMSystem;
+import SDMSystemDTO.store.DTOStore;
+
 import java.util.InputMismatchException;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Validation {
@@ -112,5 +116,31 @@ public class Validation {
 
     public static boolean isQ(String input) {
         return ((input.charAt(0) == 'Q' || input.charAt(0) == 'q') && input.length() == 1);
+    }
+
+    public static DTOStore chooseValidStore(SDMSystem sdmSystem) {
+        boolean succeeded = false;
+        DTOStore chosenStore = null;
+        Scanner s = new Scanner(System.in);
+        do {
+            try {
+                int chosenStoreSerialNumber = s.nextInt();
+                chosenStore = sdmSystem.getStoreFromStores(chosenStoreSerialNumber);
+                if (chosenStore != null) {
+                    succeeded = true;
+                } else {
+                    System.out.println("No such store in the system! Please try again!");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("You must enter an integer!");
+                s.nextLine();
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                s.nextLine();
+            }
+        }
+        while (!succeeded);
+
+        return chosenStore;
     }
 }

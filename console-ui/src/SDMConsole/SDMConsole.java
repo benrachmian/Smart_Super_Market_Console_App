@@ -20,8 +20,8 @@ import java.util.*;
 public class SDMConsole {
     private SDMSystem sdmSystem;
     private static final int MIN_CHOOSE = 1;
-    private static final int MAX_CHOOSE = 6;
-    private static final int EXIT = 6;
+    private static final int EXIT = 7;
+    private static final int MAX_CHOOSE = EXIT;
     private boolean fileLoaded = false;
 
     public SDMConsole() {
@@ -38,7 +38,8 @@ public class SDMConsole {
                         "3.Show all products in the system\n" +
                         "4.Make order\n" +
                         "5.Show order history\n" +
-                        "6.Exit");
+                        "6.Update products/prices of a store\n" +
+                        "7.Exit");
     }
 
     public void startApp() {
@@ -63,6 +64,8 @@ public class SDMConsole {
                         case 5:
                             showOrdersHistoryInSystem();
                             break;
+                        case 6:
+                            updateStoreProductsAndPrices();
                     }
                 }
             } else {
@@ -73,6 +76,45 @@ public class SDMConsole {
             }
             printOpeningMenu();
             choose = Validation.getValidChoice(MIN_CHOOSE, MAX_CHOOSE);
+        }
+    }
+
+    private void updateStoreProductsAndPrices() {
+        DTOStore storeToUpdate = chooseStoreToUpdate();
+        showUpdateOptions(storeToUpdate);
+        int choosenOption = Validation.getValidChoice(1,3);
+        switch(choosenOption){
+            case 1:
+                chooseProductFromStoreAndDelete(storeToUpdate);
+                break;
+        }
+    }
+
+    private void chooseProductFromStoreAndDelete(DTOStore storeToUpdate) {
+        printProductsInStore(storeToUpdate);
+        DTOProductInStore chosenProductToDelete ;
+    }
+
+    private void showUpdateOptions(DTOStore storeToUpdate) {
+        System.out.printf("What would you like to update in store: %s, ID: %d\n",storeToUpdate.getStoreName(),storeToUpdate.getStoreSerialNumber());
+        System.out.println("1. Delete product from store.");
+        System.out.println("2. Add new product to store.");
+        System.out.println("3. Update product's price");
+
+    }
+
+    private DTOStore chooseStoreToUpdate() {
+        printAllStoresIdName();
+        System.out.println("Please choose the store you would like to update by inserting its serial number:");
+        return Validation.chooseValidStore(sdmSystem);
+    }
+
+    private void printAllStoresIdName() {
+        Map<Integer, DTOStore> storesInSystem = sdmSystem.getStoresInSystemBySerialNumber();
+        System.out.println("The stores in the system are:");
+        for(DTOStore store : storesInSystem.values()){
+            System.out.println("-------------------------------------------------------------------");
+            printStoreIdAndName(store.getStoreSerialNumber(),store.getStoreName());
         }
     }
 
@@ -197,27 +239,20 @@ public class SDMConsole {
         do {
             try {
                 System.out.println("Please choose a store by entering its serial number: ");
-                int chosenStoreSerialNumber = s.nextInt();
-                DTOStore chosenStore = sdmSystem.getStoreFromStores(chosenStoreSerialNumber);
-                if (chosenStore != null) {
-                    Date orderDate = getOrderDateFromUser();
-                    Point userLocation = getLocationDifferentFromStores();
-                    chooseProducts(productsInOrder,false,chosenStore);
-                    deliveryCost = sdmSystem.getDeliveryCost(chosenStore.getStoreSerialNumber(), userLocation);
-                    if (productsInOrder.size() >= 1) {
-                        Collection<Pair<Float, DTOProductInStore>> productsInOrderAsProductInStoreObj = createProductInStoreCollection(chosenStore,productsInOrder);
-                        showSummeryOfStaticOrder(chosenStore, productsInOrderAsProductInStoreObj, deliveryCost, userLocation);
-                        if (askIfConfirmOrder()) {
-                            sdmSystem.makeNewStaticOrder(chosenStore, orderDate, deliveryCost, productsInOrderAsProductInStoreObj);
-                            System.out.println("The order was made successfully!");
-                        }
+                DTOStore chosenStore = Validation.chooseValidStore(sdmSystem);
+                Date orderDate = getOrderDateFromUser();
+                Point userLocation = getLocationDifferentFromStores();
+                chooseProducts(productsInOrder, false, chosenStore);
+                deliveryCost = sdmSystem.getDeliveryCost(chosenStore.getStoreSerialNumber(), userLocation);
+                if (productsInOrder.size() >= 1) {
+                    Collection<Pair<Float, DTOProductInStore>> productsInOrderAsProductInStoreObj = createProductInStoreCollection(chosenStore, productsInOrder);
+                    showSummeryOfStaticOrder(chosenStore, productsInOrderAsProductInStoreObj, deliveryCost, userLocation);
+                    if (askIfConfirmOrder()) {
+                        sdmSystem.makeNewStaticOrder(chosenStore, orderDate, deliveryCost, productsInOrderAsProductInStoreObj);
+                        System.out.println("The order was made successfully!");
                     }
-                    succeeded = true;
-
-                    // }
-                } else {
-                    System.out.println("No such store in the system! Please try again!");
                 }
+                succeeded = true;
             } catch (InputMismatchException e) {
                 System.out.println("You must enter an integer!");
                 s.nextLine();
@@ -456,16 +491,16 @@ public class SDMConsole {
         Map<Integer, DTOStore> storesInSystem = sdmSystem.getStoresInSystemBySerialNumber();
         for (DTOStore dtoStore : storesInSystem.values()) {
             System.out.println("-------------------------------------------------------------------");
-            printDTOStoreAndItsProducts(dtoStore);
+            printStoreAndItsProducts(dtoStore);
             System.out.println("-------------------------------------------------------------------");
         }
     }
 
-    private void printDTOStoreAndItsProducts(DTOStore dtoStore) {
+    private void printStoreAndItsProducts(DTOStore dtoStore) {
         System.out.println("Store ID: " + dtoStore.getStoreSerialNumber() +
             "\nStore name: " + dtoStore.getStoreName() +
             "\nProducts in store:\n");
-        printDTOProductsInStore(dtoStore);
+        printProductsInStore(dtoStore);
         System.out.println("Orders history: ");
         printDTOStoreOrderHistory(dtoStore);
         System.out.print("PPK: " + dtoStore.getPpk());
@@ -494,7 +529,7 @@ public class SDMConsole {
     }
 
 
-    private void printDTOProductsInStore(DTOStore dtoStore) {
+    private void printProductsInStore(DTOStore dtoStore) {
         for(DTOProductInStore dtoProductInStore : dtoStore.getProductsInStore().values()) {
             printProductInStore(dtoProductInStore);
         }
