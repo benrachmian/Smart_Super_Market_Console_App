@@ -89,8 +89,10 @@ public class SDMConsole {
                 break;
             case 2:
                 addProductToStore(storeToUpdate);
+                break;
             case 3:
                 chooseProductAndUpdateItsPrice(storeToUpdate);
+                break;
         }
     }
 

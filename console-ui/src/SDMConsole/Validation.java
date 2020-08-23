@@ -102,11 +102,14 @@ public class Validation {
 
     public static boolean getValidYesOrNoAnswer() {
         Scanner s = new Scanner(System.in);
-        char answer = 0;
+        char yesOrNo = 0;
+        String userAnswer;
+
         boolean validAnswer = false;
         while(!validAnswer) {
-            answer = s.next().charAt(0);
-            if (answer == 'Y' || answer == 'y' || answer == 'N' || answer == 'n'){
+            userAnswer = s.next();
+            yesOrNo = userAnswer.charAt(0);
+            if (userAnswer.length() == 1 && (yesOrNo == 'Y' || yesOrNo == 'y' || yesOrNo == 'N' || yesOrNo == 'n')){
                 validAnswer = true;
             }
             else{
@@ -114,7 +117,7 @@ public class Validation {
             }
         }
 
-        return answer == 'Y' || answer == 'y';
+        return yesOrNo == 'Y' || yesOrNo == 'y';
     }
 
     public static boolean isQ(String input) {
