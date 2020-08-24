@@ -184,6 +184,7 @@ public class SDMSystem {
         //Order newOrder = makeOrderAndAddToStore(chosenStore.getStoreSerialNumber(), orderDate, deliveryCost, productsInOrder);
         Store storeTheProductBelong = storesInSystem.getStoreInSystem(chosenStore.getStoreSerialNumber());
         Order newOrder = createdNewStaticOrderObjectAndUpdateAmountSoldInStore(orderDate,deliveryCost,productsInOrder,storeTheProductBelong);
+        updateAmountSoldInSystemForEveryProductInOrder(productsInOrder);
         storeTheProductBelong.addOrder(newOrder,deliveryCost);
         ordersInSystem.put(newOrder.getOrderSerialNumber(),newOrder);
         //addOrderWithoutSubOrdersToSystem(newOrder,chosenStore.getStoreSerialNumber());
@@ -312,7 +313,6 @@ public class SDMSystem {
                 amountOfProducts++;
             }
         }
-        updateAmountSoldInSystemForEveryProductInOrder(productsInOrder);
         float productsCost = calcProductsCost(productsInOrder);
 
         return new StaticOrder(orderDate,
@@ -520,11 +520,32 @@ public class SDMSystem {
 
     private void addLoadedOrdersToSystem(Map<Integer, Order> orders) {
         for(Order order : orders.values()){
+            if(order instanceof StaticOrder){
+                addLoadedStaticOrderToSystem((StaticOrder)order);
+            }
+            else{
+                int s = 3;
+            }
             //ordersInSystem.put(order.getOrderSerialNumber(),order);
             //addOrderToSystem
             //makeNewStaticOrder();
 //            addOrderWithoutSubOrdersToSystem(order,
 //                    order.getStoresFromWhomTheOrderWasMade().g);
+        }
+    }
+
+    private void addLoadedStaticOrderToSystem(StaticOrder order) {
+        increaseProductsInLoadedOrderAmountSoldInStore(order.getProductsInOrder());
+        updateAmountSoldInSystemForEveryProductInOrder(order.getProductsInOrder());
+        storesInSystem.getStoreInSystem(order.getStoreFromWhomTheOrderWasMade().getSerialNumber()).addOrder(order,order.getDeliveryCost());;
+        ordersInSystem.put(order.getOrderSerialNumber(),order);
+    }
+
+    private void increaseProductsInLoadedOrderAmountSoldInStore(Collection<Pair<Float, ProductInStore>> productsInOrder) {
+        for(Pair<Float, ProductInStore> loadedProductAndAmount : productsInOrder ){
+            Store storeSellingTheProduct =storesInSystem.getStoreInSystem(loadedProductAndAmount.getValue().getStoreTheProductBelongs().getSerialNumber());
+            ProductInStore currProduct = storeSellingTheProduct.getProductInStore(loadedProductAndAmount.getValue().getSerialNumber());
+            currProduct.increaseAmountSoldInStore(loadedProductAndAmount.getKey());
         }
     }
 

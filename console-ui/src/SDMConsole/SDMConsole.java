@@ -68,6 +68,7 @@ public class SDMConsole {
                             break;
                         case 6:
                             updateStoreProductsAndPrices();
+                            break;
                         case 7:
                             saveOrLoadOrdersToFile();
                             break;
@@ -103,6 +104,7 @@ public class SDMConsole {
             try {
                 sdmSystem.loadOrdersFromFile(filePath);
                 succeed = true;
+                System.out.println("The file was loaded successfully!");
             } catch (FileNotFoundException e) {
                 System.out.println("There is no such file! Please try again with different file!");
             } catch (IOException e) {
@@ -118,6 +120,7 @@ public class SDMConsole {
             String filePath = askForFilePath(".dat");
             try {
                 sdmSystem.saveOrdersToFile(filePath);
+                System.out.println("The orders were save successfully!");
             } catch (IOException e) {
                 System.out.println("Something went wrong with the saving.");
             }
