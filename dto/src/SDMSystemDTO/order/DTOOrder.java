@@ -1,6 +1,7 @@
-package SDMSystemDTO.store;
+package SDMSystemDTO.order;
 
 import SDMSystemDTO.product.DTOProductInStore;
+import SDMSystemDTO.store.DTOStore;
 import javafx.util.Pair;
 
 import java.util.Collection;

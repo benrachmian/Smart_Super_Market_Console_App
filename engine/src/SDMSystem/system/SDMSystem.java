@@ -1,14 +1,16 @@
 package SDMSystem.system;
 
+import SDMSystem.order.DynamicOrder;
+import SDMSystem.order.StaticOrder;
 import SDMSystem.product.Product;
 import SDMSystem.product.ProductInStore;
-import SDMSystem.store.Order;
+import SDMSystem.order.Order;
 import SDMSystem.store.Store;
 import SDMSystem.exceptions.*;
 import SDMSystem.validation.*;
 import SDMSystemDTO.product.DTOProduct;
 import SDMSystemDTO.product.DTOProductInStore;
-import SDMSystemDTO.store.DTOOrder;
+import SDMSystemDTO.order.DTOOrder;
 import SDMSystemDTO.store.DTOStore;
 import SDMSystemDTO.product.WayOfBuying;
 import javafx.util.Pair;
@@ -180,15 +182,18 @@ public class SDMSystem {
                                    Collection<Pair<Float,DTOProductInStore>> dtoProductsInOrder) {
         Collection<Pair<Float,ProductInStore>> productsInOrder = createProductsInOrderCollectionFromDTO(dtoProductsInOrder);
         //Order newOrder = makeOrderAndAddToStore(chosenStore.getStoreSerialNumber(), orderDate, deliveryCost, productsInOrder);
-        Order newOrder = createdNewOrderObject(orderDate,deliveryCost,productsInOrder);
-        addOrderWithoutSubOrdersToSystem(newOrder,chosenStore.getStoreSerialNumber());
+        Store storeTheProductBelong = storesInSystem.getStoreInSystem(chosenStore.getStoreSerialNumber());
+        Order newOrder = createdNewStaticOrderObjectAndUpdateAmountSoldInStore(orderDate,deliveryCost,productsInOrder,storeTheProductBelong);
+        storeTheProductBelong.addOrder(newOrder,deliveryCost);
+        ordersInSystem.put(newOrder.getOrderSerialNumber(),newOrder);
+        //addOrderWithoutSubOrdersToSystem(newOrder,chosenStore.getStoreSerialNumber());
     }
 
-    private void addOrderWithoutSubOrdersToSystem(Order newOrder, int storeSerialNumber) {
-        addOrderToStore(storeSerialNumber,newOrder.getDeliveryCost(),newOrder);
-        updateAmountsSoldOfProduct(newOrder.getProductsInOrder());
-        ordersInSystem.put(newOrder.getOrderSerialNumber(), newOrder);
-    }
+//    private void addOrderWithoutSubOrdersToSystem(Order newOrder, int storeSerialNumber) {
+//        addOrderToStore(storeSerialNumber,newOrder.getDeliveryCost(),newOrder);
+//        //updateAmountsSoldOfProduct(newOrder.getProductsInOrder());
+//        ordersInSystem.put(newOrder.getOrderSerialNumber(), newOrder);
+//    }
 
 //    private Order makeOrderAndAddToStore(int storeSerialNumber, Date orderDate, float deliveryCost, Collection<Pair<Float, ProductInStore>> productsInOrder) {
 //        Order newOrder = createdNewOrderObject(orderDate, deliveryCost,productsInOrder);
@@ -196,32 +201,31 @@ public class SDMSystem {
 //        return newOrder;
 //    }
 
-    private void addOrderToStore(int storeSerialNumber, float deliveryCost, Order newOrder) {
-        Store storeWithNewOrder = storesInSystem.getStoreInSystem(storeSerialNumber);
-        storeWithNewOrder.addOrder(newOrder, deliveryCost);
-    }
+//    private void addOrderToStore(int storeSerialNumber, float deliveryCost, Order newOrder) {
+//        Store storeWithNewOrder = storesInSystem.getStoreInSystem(storeSerialNumber);
+//        storeWithNewOrder.addOrder(newOrder, deliveryCost);
+//    }
 
     public void makeNewDynamicOrder(Date orderDate,
                                     Point userLocation,
                                     Map<Integer, Collection<Pair<Float, DTOProductInStore>>> cheapestBasketDTO) {
-        Collection<Order> subOrders = new LinkedList<>();
+        Collection<StaticOrder> subOrders = new LinkedList<>();
         float totalDeliveryCost;
         //int[0] = amount of products
         //int[1] = amount of products kinds
         int[] amountOfProductsAndKinds = new int[2];
-        makeSubOrderToEachStore(orderDate, userLocation, cheapestBasketDTO, subOrders);
+        makeSubOrderFromEachStore(orderDate, userLocation, cheapestBasketDTO, subOrders);
         totalDeliveryCost = calcTotalDeliveryCostInDynamicOrder(subOrders);
         Collection<Pair<Float,ProductInStore>> allProductsInOrder = getAllProductsFromSubOrdersAndAmountOfProductsAndKinds(subOrders,amountOfProductsAndKinds);
-        Map<Integer,Store> storesSellingTheProducts = getStoresSellingTheProductsFromBasket(cheapestBasketDTO);
-        Order dynamicOrder = new Order(orderDate,
+        //Map<Integer,Store> storesSellingTheProducts = getStoresSellingTheProductsFromBasket(cheapestBasketDTO);
+        Order dynamicOrder = new DynamicOrder(orderDate,
                 allProductsInOrder,
                 calcProductsCost(allProductsInOrder),
                 totalDeliveryCost,
-                storesSellingTheProducts,
                 amountOfProductsAndKinds[0],
                 amountOfProductsAndKinds[1],
                 subOrders);
-        updateAmountsSoldOfProduct(allProductsInOrder);
+        //updateAmountsSoldOfProduct(allProductsInOrder);
         ordersInSystem.put(dynamicOrder.getOrderSerialNumber(),dynamicOrder);
     }
 
@@ -234,7 +238,7 @@ public class SDMSystem {
         return storesSellingTheProducts;
     }
 
-    private Collection<Pair<Float,ProductInStore>> getAllProductsFromSubOrdersAndAmountOfProductsAndKinds(Collection<Order> subOrders, int[] amountOfProductsAndKinds) {
+    private Collection<Pair<Float,ProductInStore>> getAllProductsFromSubOrdersAndAmountOfProductsAndKinds(Collection<StaticOrder> subOrders, int[] amountOfProductsAndKinds) {
         Collection<Pair<Float,ProductInStore>> allProductsInOrder = new LinkedList<>();
         amountOfProductsAndKinds[0] = amountOfProductsAndKinds[1] = 0;
         for(Order order : subOrders) {
@@ -263,7 +267,7 @@ public class SDMSystem {
         return res;
     }
 
-    private float calcTotalDeliveryCostInDynamicOrder(Collection<Order> subOrders) {
+    private float calcTotalDeliveryCostInDynamicOrder(Collection<StaticOrder> subOrders) {
         float totalDeliveryCost = 0;
         for(Order order : subOrders) {
             totalDeliveryCost += order.getDeliveryCost();
@@ -272,35 +276,34 @@ public class SDMSystem {
         return totalDeliveryCost;
     }
 
-    private void makeSubOrderToEachStore(Date orderDate,
-                                         Point userLocation,
-                                         Map<Integer, Collection<Pair<Float, DTOProductInStore>>> cheapestBasketDTO,
-                                         Collection<Order> subOrders) {
-        Order subOrder;
+    private void makeSubOrderFromEachStore(Date orderDate,
+                                           Point userLocation,
+                                           Map<Integer, Collection<Pair<Float, DTOProductInStore>>> cheapestBasketDTO,
+                                           Collection<StaticOrder> subOrders) {
+        StaticOrder subOrder;
         float deliveryCost;
         for(Integer storeSerialNumber : cheapestBasketDTO.keySet()){
-            //Store storeSellingTheProducts = storesInSystem.getStoreInSystem(storeSerialNumber);
+            Store storeSellingTheProducts = storesInSystem.getStoreInSystem(storeSerialNumber);
             deliveryCost = getDeliveryCost(storeSerialNumber, userLocation);
 //            subOrder = makeOrderAndAddToStore(storeSerialNumber,
 //                    orderDate,
 //                    deliveryCost,
 //                    createProductsInOrderCollectionFromDTO(cheapestBasketDTO.get(storeSerialNumber)));
-            subOrder = createdNewOrderObject(orderDate,deliveryCost,createProductsInOrderCollectionFromDTO(cheapestBasketDTO.get(storeSerialNumber)));
-            addOrderToStore(storeSerialNumber,deliveryCost,subOrder);
+            subOrder = createdNewStaticOrderObjectAndUpdateAmountSoldInStore(orderDate,deliveryCost,createProductsInOrderCollectionFromDTO(cheapestBasketDTO.get(storeSerialNumber)), storeSellingTheProducts);
+            storeSellingTheProducts.addOrder(subOrder,deliveryCost);
             subOrders.add(subOrder);
         }
     }
 
-    private Order createdNewOrderObject(Date orderDate,
-                                        float deliveryCost,
-                                        Collection<Pair<Float, ProductInStore>> productsInOrder) {
-
-        Map<Integer,Store> storesFromWhomTheOrderWasMade = new HashMap<>();
+    private StaticOrder createdNewStaticOrderObjectAndUpdateAmountSoldInStore(Date orderDate,
+                                                                              float deliveryCost,
+                                                                              Collection<Pair<Float, ProductInStore>> productsInOrder,
+                                                                              Store storeTheProductBelong) {
         int amountOfProducts = 0, amountKindsOfProducts = 0;
         for(Pair<Float, ProductInStore> productInOrderAndAmount : productsInOrder){
-            productInOrderAndAmount.getValue().increaseAmountSoldInStore(productInOrderAndAmount.getKey());
-            Store storeTheProductBelongs = productInOrderAndAmount.getValue().getStoreTheProductBelongs();
-            storesFromWhomTheOrderWasMade.putIfAbsent(storeTheProductBelongs.getSerialNumber(),storeTheProductBelongs);
+            ProductInStore currProduct = productInOrderAndAmount.getValue();
+            currProduct.increaseAmountSoldInStore(productInOrderAndAmount.getKey());
+            //currProduct.increaseAmountSoldInAllStores(productInOrderAndAmount.getKey());
             amountKindsOfProducts++;
             if(productInOrderAndAmount.getValue().getWayOfBuying() == WayOfBuying.BY_QUANTITY){
                 amountOfProducts += productInOrderAndAmount.getKey();
@@ -309,16 +312,16 @@ public class SDMSystem {
                 amountOfProducts++;
             }
         }
+        updateAmountSoldInSystemForEveryProductInOrder(productsInOrder);
         float productsCost = calcProductsCost(productsInOrder);
 
-        return new Order(orderDate,
+        return new StaticOrder(orderDate,
                 productsInOrder,
                 productsCost,
                 deliveryCost,
-                storesFromWhomTheOrderWasMade,
                 amountOfProducts,
                 amountKindsOfProducts,
-                null);
+                storeTheProductBelong);
     }
 
     private float calcProductsCost(Collection<Pair<Float, ProductInStore>> productsInOrder) {
@@ -343,7 +346,7 @@ public class SDMSystem {
     }
 
 
-    private void updateAmountsSoldOfProduct(Collection<Pair<Float, ProductInStore>> productsInOrder) {
+    private void updateAmountSoldInSystemForEveryProductInOrder(Collection<Pair<Float, ProductInStore>> productsInOrder) {
         for(Pair<Float, ProductInStore> productInOrder : productsInOrder)
         {
             Product productInSystem = productsInSystem.get(productInOrder.getValue().getSerialNumber());
@@ -520,8 +523,8 @@ public class SDMSystem {
             //ordersInSystem.put(order.getOrderSerialNumber(),order);
             //addOrderToSystem
             //makeNewStaticOrder();
-            addOrderWithoutSubOrdersToSystem(order,
-                    order.getStoresFromWhomTheOrderWasMade().g);
+//            addOrderWithoutSubOrdersToSystem(order,
+//                    order.getStoresFromWhomTheOrderWasMade().g);
         }
     }
 

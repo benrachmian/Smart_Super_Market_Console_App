@@ -3,14 +3,13 @@ package SDMSystem.store;
 import SDMSystem.Feedback;
 import SDMSystem.HasSerialNumber;
 import SDMSystem.location.Locationable;
+import SDMSystem.order.Order;
 import SDMSystem.product.Product;
 import SDMSystem.product.ProductInStore;
 import SDMSystem.exceptions.*;
 import SDMSystemDTO.product.DTOProductInStore;
-import SDMSystemDTO.product.WayOfBuying;
-import SDMSystemDTO.store.DTOOrder;
+import SDMSystemDTO.order.DTOOrder;
 import SDMSystemDTO.store.DTOStore;
-import javafx.util.Pair;
 
 import java.awt.*;
 import java.io.Serializable;

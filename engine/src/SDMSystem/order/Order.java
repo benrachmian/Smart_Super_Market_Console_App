@@ -1,30 +1,26 @@
-package SDMSystem.store;
+package SDMSystem.order;
 
-import SDMSystem.customer.Customer;
 import SDMSystem.product.ProductInStore;
 import SDMSystemDTO.product.DTOProductInStore;
 import SDMSystemDTO.product.WayOfBuying;
-import SDMSystemDTO.store.DTOOrder;
-import SDMSystemDTO.store.DTOStore;
+import SDMSystemDTO.order.DTOOrder;
 import javafx.util.Pair;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.function.IntToDoubleFunction;
 
-public class Order implements Serializable {
+public abstract class Order implements Serializable {
     private static int generatedSerialNumber = 1000;
     private Date orderDate;
     private Collection<Pair<Float,ProductInStore>> productsInOrder;
-    private Collection<Order> subOrders;
+    ///private Collection<Order> subOrders;
     //private Customer whoOrdered;
     private float productsCost;
     private float deliveryCost;
     private final int orderSerialNumber;
-    private Map<Integer,Store> storesFromWhomTheOrderWasMade;
+    ///private Map<Integer, Store> storesFromWhomTheOrderWasMade;
     private int amountOfProducts;
     private int amountOfProductsKinds;
 
@@ -33,51 +29,51 @@ public class Order implements Serializable {
                  Collection<Pair<Float,ProductInStore>> productsInOrder,
                  float productsCost,
                  float deliveryCost,
-                 Map<Integer,Store> storesFromWhomTheOrderWasMade,
+                 //Map<Integer,Store> storesFromWhomTheOrderWasMade,
                  int amountOfProducts,
-                 int amountOfProductsKinds,
-                 Collection<Order> subOrders) {
+                 int amountOfProductsKinds){
+                 //Collection<Order> subOrders) {
         this.orderSerialNumber = generatedSerialNumber++;
         this.orderDate = orderDate;
         this.productsInOrder = productsInOrder;
         this.productsCost = productsCost;
         this.deliveryCost = deliveryCost;
-        this.storesFromWhomTheOrderWasMade = storesFromWhomTheOrderWasMade;
+        //this.storesFromWhomTheOrderWasMade = storesFromWhomTheOrderWasMade;
         this.amountOfProducts = amountOfProducts;
         this.amountOfProductsKinds = amountOfProductsKinds;
-        this.subOrders = subOrders;
+        //this.subOrders = subOrders;
 
     }
 
-    public Map<Integer, Store> getStoresFromWhomTheOrderWasMade() {
-        return storesFromWhomTheOrderWasMade;
-    }
+//    public Map<Integer, Store> getStoresFromWhomTheOrderWasMade() {
+//        return storesFromWhomTheOrderWasMade;
+//    }
+//
+//    public Collection<Order> getSubOrders() {
+//        return subOrders;
+//    }
 
-    public Collection<Order> getSubOrders() {
-        return subOrders;
-    }
+    public abstract DTOOrder createDTOOrderFromOrder();
+//        DTOOrder dtoOrder = new DTOOrder(getOrderDate(),
+//                getDTOProductsInOrder(),
+//                getProductsCost(),
+//                getDeliveryCost(),
+//                getOrderSerialNumber(),
+//                createDTOStoresTheProductBelongsTo(),
+//                getAmountOfProducts(),
+//                getAmountOfProductsKinds());
+//
+//        return dtoOrder;
+//    }
 
-    public DTOOrder createDTOOrderFromOrder(){
-        DTOOrder dtoOrder = new DTOOrder(getOrderDate(),
-                getDTOProductsInOrder(),
-                getProductsCost(),
-                getDeliveryCost(),
-                getOrderSerialNumber(),
-                createDTOStoresTheProductBelongsTo(),
-                getAmountOfProducts(),
-                getAmountOfProductsKinds());
-
-        return dtoOrder;
-    }
-
-    private Collection<DTOStore> createDTOStoresTheProductBelongsTo() {
-        Collection<DTOStore> dtoStores = new LinkedList<>();
-        for(Store store : storesFromWhomTheOrderWasMade.values()){
-            dtoStores.add(store.createDTOStore());
-        }
-
-        return dtoStores;
-    }
+//    private Collection<DTOStore> createDTOStoresTheProductBelongsTo() {
+//        Collection<DTOStore> dtoStores = new LinkedList<>();
+//        for(Store store : storesFromWhomTheOrderWasMade.values()){
+//            dtoStores.add(store.createDTOStore());
+//        }
+//
+//        return dtoStores;
+//    }
 
 //    public Order(){
 //        this.orderDate = null;

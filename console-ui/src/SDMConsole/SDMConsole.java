@@ -5,7 +5,7 @@ import SDMSystem.system.SDMSystem;
 import SDMSystemDTO.product.DTOProduct;
 import SDMSystemDTO.product.DTOProductInStore;
 import SDMSystemDTO.product.WayOfBuying;
-import SDMSystemDTO.store.DTOOrder;
+import SDMSystemDTO.order.DTOOrder;
 import SDMSystemDTO.store.DTOStore;
 import javafx.util.Pair;
 import xml.XMLHelper;
