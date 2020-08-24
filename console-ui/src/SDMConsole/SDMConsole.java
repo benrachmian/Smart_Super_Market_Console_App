@@ -40,7 +40,7 @@ public class SDMConsole {
                         "4.Make order\n" +
                         "5.Show order history\n" +
                         "6.Update products/prices of a store\n" +
-                        "7.Save\\Load orders\n" +
+                        "7.Save/Load orders\n" +
                         "8.Exit");
     }
 
@@ -120,7 +120,7 @@ public class SDMConsole {
             String filePath = askForFilePath(".dat");
             try {
                 sdmSystem.saveOrdersToFile(filePath);
-                System.out.println("The orders were save successfully!");
+                System.out.println("The orders were saved successfully!");
             } catch (IOException e) {
                 System.out.println("Something went wrong with the saving.");
             }

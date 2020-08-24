@@ -47,4 +47,8 @@ public class DynamicOrder extends Order {
 
         return storesFromWhomTheOrderWasMade;
     }
+
+    public Collection<StaticOrder> getSubOrders() {
+        return subOrders;
+    }
 }
