@@ -8,13 +8,14 @@ import SDMSystemDTO.store.DTOOrder;
 import SDMSystemDTO.store.DTOStore;
 import javafx.util.Pair;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.function.IntToDoubleFunction;
 
-public class Order {
+public class Order implements Serializable {
     private static int generatedSerialNumber = 1000;
     private Date orderDate;
     private Collection<Pair<Float,ProductInStore>> productsInOrder;
@@ -46,6 +47,14 @@ public class Order {
         this.amountOfProductsKinds = amountOfProductsKinds;
         this.subOrders = subOrders;
 
+    }
+
+    public Map<Integer, Store> getStoresFromWhomTheOrderWasMade() {
+        return storesFromWhomTheOrderWasMade;
+    }
+
+    public Collection<Order> getSubOrders() {
+        return subOrders;
     }
 
     public DTOOrder createDTOOrderFromOrder(){

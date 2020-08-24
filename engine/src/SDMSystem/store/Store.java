@@ -13,9 +13,10 @@ import SDMSystemDTO.store.DTOStore;
 import javafx.util.Pair;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.util.*;
 
-public class Store implements Locationable, HasSerialNumber<Integer> {
+public class Store implements Locationable, HasSerialNumber<Integer>, Serializable {
 
     private static int generatedSerialNumber = 1000;
     private Map<Integer,ProductInStore> productsInStore;

@@ -176,6 +176,15 @@ public class Validation {
         return chosenProduct;
     }
 
+    public static boolean isCorrectFileType(String filePath, String fileType) {
+        boolean res = true;
+        int lengthOfType = fileType.length();
+        if(filePath.length() <(lengthOfType) || !filePath.substring(filePath.length()-lengthOfType).equals(fileType)){
+            res = false;
+        }
+        return res;
+    }
+
     public static DTOProduct chooseValidProductFromProducts(Map<Integer, DTOProduct> productsTheStoreDoesntSell) {
         DTOProduct chosenProduct = null;
         Scanner s = new Scanner(System.in);

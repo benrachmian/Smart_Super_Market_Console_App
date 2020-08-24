@@ -15,6 +15,7 @@ import javafx.util.Pair;
 import xml.generated.*;
 
 import java.awt.*;
+import java.io.*;
 import java.util.*;
 import java.util.List;
 
@@ -178,16 +179,26 @@ public class SDMSystem {
                                    float deliveryCost,
                                    Collection<Pair<Float,DTOProductInStore>> dtoProductsInOrder) {
         Collection<Pair<Float,ProductInStore>> productsInOrder = createProductsInOrderCollectionFromDTO(dtoProductsInOrder);
-        Order newOrder = makeOrderAndAddToStore(chosenStore.getStoreSerialNumber(), orderDate, deliveryCost, productsInOrder);
-        updateAmountsSoldOfProduct(productsInOrder);
-        ordersInSystem.put(newOrder.getOrderSerialNumber(),newOrder);
+        //Order newOrder = makeOrderAndAddToStore(chosenStore.getStoreSerialNumber(), orderDate, deliveryCost, productsInOrder);
+        Order newOrder = createdNewOrderObject(orderDate,deliveryCost,productsInOrder);
+        addOrderWithoutSubOrdersToSystem(newOrder,chosenStore.getStoreSerialNumber());
     }
 
-    private Order makeOrderAndAddToStore(int storeSerialNumber, Date orderDate, float deliveryCost, Collection<Pair<Float, ProductInStore>> productsInOrder) {
+    private void addOrderWithoutSubOrdersToSystem(Order newOrder, int storeSerialNumber) {
+        addOrderToStore(storeSerialNumber,newOrder.getDeliveryCost(),newOrder);
+        updateAmountsSoldOfProduct(newOrder.getProductsInOrder());
+        ordersInSystem.put(newOrder.getOrderSerialNumber(), newOrder);
+    }
+
+//    private Order makeOrderAndAddToStore(int storeSerialNumber, Date orderDate, float deliveryCost, Collection<Pair<Float, ProductInStore>> productsInOrder) {
+//        Order newOrder = createdNewOrderObject(orderDate, deliveryCost,productsInOrder);
+//        addOrderToStore(storeSerialNumber, deliveryCost, newOrder);
+//        return newOrder;
+//    }
+
+    private void addOrderToStore(int storeSerialNumber, float deliveryCost, Order newOrder) {
         Store storeWithNewOrder = storesInSystem.getStoreInSystem(storeSerialNumber);
-        Order newOrder = createdNewOrderObject(orderDate, deliveryCost,productsInOrder);
         storeWithNewOrder.addOrder(newOrder, deliveryCost);
-        return newOrder;
     }
 
     public void makeNewDynamicOrder(Date orderDate,
@@ -270,10 +281,12 @@ public class SDMSystem {
         for(Integer storeSerialNumber : cheapestBasketDTO.keySet()){
             //Store storeSellingTheProducts = storesInSystem.getStoreInSystem(storeSerialNumber);
             deliveryCost = getDeliveryCost(storeSerialNumber, userLocation);
-            subOrder = makeOrderAndAddToStore(storeSerialNumber,
-                    orderDate,
-                    deliveryCost,
-                    createProductsInOrderCollectionFromDTO(cheapestBasketDTO.get(storeSerialNumber)));
+//            subOrder = makeOrderAndAddToStore(storeSerialNumber,
+//                    orderDate,
+//                    deliveryCost,
+//                    createProductsInOrderCollectionFromDTO(cheapestBasketDTO.get(storeSerialNumber)));
+            subOrder = createdNewOrderObject(orderDate,deliveryCost,createProductsInOrderCollectionFromDTO(cheapestBasketDTO.get(storeSerialNumber)));
+            addOrderToStore(storeSerialNumber,deliveryCost,subOrder);
             subOrders.add(subOrder);
         }
     }
@@ -486,5 +499,44 @@ public class SDMSystem {
     public void updateProductPrice(DTOStore storeToUpdateDTO, DTOProductInStore chosenProductToUpdateDTO, float newPrice) {
         Store storeToUpdate = storesInSystem.getStoreInSystem(storeToUpdateDTO.getStoreSerialNumber());
         storeToUpdate.updateProductPrice(chosenProductToUpdateDTO.getProductSerialNumber(),newPrice);
+    }
+
+    public void saveOrdersToFile(String filePath) throws IOException {
+        try (ObjectOutputStream out =
+                     new ObjectOutputStream(
+                             new FileOutputStream(filePath))) {
+            out.writeObject(ordersInSystem);
+            out.flush();
+        }
+    }
+
+    public void loadOrdersFromFile(String filePath) throws IOException, ClassNotFoundException {
+        Map<Integer, Order> orders = getOrdersFromFile(filePath);
+        addLoadedOrdersToSystem(orders);
+    }
+
+    private void addLoadedOrdersToSystem(Map<Integer, Order> orders) {
+        for(Order order : orders.values()){
+            //ordersInSystem.put(order.getOrderSerialNumber(),order);
+            //addOrderToSystem
+            //makeNewStaticOrder();
+            addOrderWithoutSubOrdersToSystem(order,
+                    order.getStoresFromWhomTheOrderWasMade().g);
+        }
+    }
+
+    private  Map<Integer,Order> getOrdersFromFile(String filePath) throws IOException, ClassNotFoundException {
+        Map<Integer, Order> orders = null;
+        try (ObjectInputStream in =
+                     new ObjectInputStream(
+                             new FileInputStream(filePath))) {
+            orders = (Map<Integer, Order>) in.readObject();
+        }
+
+        return orders;
+    }
+
+    public int getNumOfOrders() {
+        return ordersInSystem.size();
     }
 }

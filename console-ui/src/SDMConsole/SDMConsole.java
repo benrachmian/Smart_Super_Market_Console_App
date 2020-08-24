@@ -13,6 +13,7 @@ import xml.XMLHelper;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -20,7 +21,7 @@ import java.util.*;
 public class SDMConsole {
     private SDMSystem sdmSystem;
     private static final int MIN_CHOOSE = 1;
-    private static final int EXIT = 7;
+    private static final int EXIT = 8;
     private static final int MAX_CHOOSE = EXIT;
     private boolean fileLoaded = false;
 
@@ -39,7 +40,8 @@ public class SDMConsole {
                         "4.Make order\n" +
                         "5.Show order history\n" +
                         "6.Update products/prices of a store\n" +
-                        "7.Exit");
+                        "7.Save\\Load orders\n" +
+                        "8.Exit");
     }
 
     public void startApp() {
@@ -66,6 +68,9 @@ public class SDMConsole {
                             break;
                         case 6:
                             updateStoreProductsAndPrices();
+                        case 7:
+                            saveOrLoadOrdersToFile();
+                            break;
                     }
                 }
             } else {
@@ -77,6 +82,69 @@ public class SDMConsole {
             printOpeningMenu();
             choose = Validation.getValidChoice(MIN_CHOOSE, MAX_CHOOSE);
         }
+    }
+
+    private void saveOrLoadOrdersToFile() {
+        int choose = askSaveOrLoadOrders();
+        switch(choose){
+            case 1:
+                saveOrdersToFile();
+                break;
+            case 2:
+                loadOrdersFromFile();
+                break;
+        }
+    }
+
+    private void loadOrdersFromFile() {
+        boolean succeed = false;
+        while(!succeed) {
+            String filePath = askForFilePath(".dat");
+            try {
+                sdmSystem.loadOrdersFromFile(filePath);
+                succeed = true;
+            } catch (FileNotFoundException e) {
+                System.out.println("There is no such file! Please try again with different file!");
+            } catch (IOException e) {
+                System.out.println("Something went wrong with the loading. Please try again with different file!");
+            } catch (ClassNotFoundException e) {
+                System.out.println("Something went wrong with the loading. Please try again with different file!");
+            }
+        }
+    }
+
+    private void saveOrdersToFile() {
+        if(sdmSystem.getNumOfOrders() > 0) {
+            String filePath = askForFilePath(".dat");
+            try {
+                sdmSystem.saveOrdersToFile(filePath);
+            } catch (IOException e) {
+                System.out.println("Something went wrong with the saving.");
+            }
+        }
+        else{
+            System.out.println("There are no any orders in the system yet!");
+        }
+    }
+
+    private String askForFilePath(String fileSuffix) {
+        String filePath;
+        Scanner s = new Scanner(System.in);
+        System.out.print("Please insert the path of the file with the suffix " + fileSuffix + ": ");
+        filePath =  s.nextLine();
+        while(!Validation.isCorrectFileType(filePath,fileSuffix)){
+            System.out.println("The file is not " + fileSuffix.substring(1) + " file! try again!");
+            filePath =  s.nextLine();
+        }
+
+        return filePath;
+    }
+
+    private int askSaveOrLoadOrders() {
+        System.out.println("What would you like to do?");
+        System.out.println("1.Save orders to file");
+        System.out.println("2.Load orders from file");
+        return Validation.getValidChoice(1, 2);
     }
 
     private void updateStoreProductsAndPrices() {
@@ -530,11 +598,10 @@ public class SDMConsole {
     }
 
     private boolean loadFileToSystem() {
-        Scanner scanPath = new Scanner(System.in);
         boolean succeeded = false;
-        System.out.print("Please insert the path of the xml file: ");
-        String filePath = scanPath.nextLine();
-        if(XMLHelper.isXmlFile(filePath)) {
+        //System.out.print("Please insert the path of the xml file: ");
+        String filePath = askForFilePath(".xml");
+        //if(Validation.isCorrectFileType(filePath,".xml")) {
             try {
                 XMLHelper.FromXmlFileToObject(filePath, sdmSystem);
                 succeeded = true;
@@ -545,10 +612,10 @@ public class SDMConsole {
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
-        }
-        else{
-            System.out.println("The file is not an XML file!");
-        }
+        //}
+        //else{
+        //    System.out.println("The file is not an XML file!");
+      //  }
         return succeeded;
     }
 

@@ -6,25 +6,11 @@ import SDMSystemDTO.product.DTOProduct;
 import SDMSystemDTO.product.WayOfBuying;
 import SDMSystemDTO.store.DTOStore;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
 
-public class Product implements HasSerialNumber<Integer> {
-
-
-//    public enum WayOfBuying {
-//        BY_QUANTITY {
-//            @Override
-//            public String toString() {
-//                return "By quantity";
-//            }
-//        }, BY_WEIGHT{
-//            @Override
-//            public String toString() {
-//                return "By weight";
-//            }
-//        }
-//    }
+public class Product implements HasSerialNumber<Integer>, Serializable {
 
     protected static int generatedSerialNumber = 1000;
     protected final int productSerialNumber;

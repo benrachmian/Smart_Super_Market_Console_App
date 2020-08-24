@@ -38,12 +38,6 @@ public class XMLHelper {
         return (SuperDuperMarketDescriptor) u.unmarshal(in);
     }
 
-    public static boolean isXmlFile(String filePath) {
-        boolean res = true;
-        if(filePath.length() <4 || !filePath.substring(filePath.length()-4).equals(".xml")){
-            res = false;
-        }
-        return res;
-    }
+
 }
 
