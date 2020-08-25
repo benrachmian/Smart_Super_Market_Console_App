@@ -27,7 +27,7 @@ public class SDMSystem {
     //In order to create two different way to find a store - by serial number and by location
     private StoresInSystem storesInSystem;
     private Map<Integer,Product> productsInSystem;
-    private final Map<Integer, Order> ordersInSystem;
+    private Map<Integer, Order> ordersInSystem;
 
     public SDMSystem() {
         storesInSystem = new StoresInSystem();
@@ -54,8 +54,10 @@ public class SDMSystem {
     public void loadSystem(SuperDuperMarketDescriptor superDuperMarketDescriptor) {
         StoresInSystem oldStoresInSystem = this.storesInSystem;
         Map<Integer, Product> oldProductsInSystem = this.productsInSystem;
+        Map<Integer, Order> oldOrdersInSystem = this.ordersInSystem;
         storesInSystem = new StoresInSystem();
         productsInSystem = new HashMap<>();
+        ordersInSystem = new HashMap<>();
         try {
             loadProducts(superDuperMarketDescriptor.getSDMItems());
             loadStores(superDuperMarketDescriptor.getSDMStores());
@@ -64,6 +66,7 @@ public class SDMSystem {
         catch (Exception e){
             storesInSystem = oldStoresInSystem;
             productsInSystem = oldProductsInSystem;
+            ordersInSystem = oldOrdersInSystem;
             throw e;
         }
     }
@@ -227,6 +230,7 @@ public class SDMSystem {
                 amountOfProductsAndKinds[1],
                 subOrders);
         //updateAmountsSoldOfProduct(allProductsInOrder);
+        updateAmountSoldInSystemForEveryProductInOrder(allProductsInOrder);
         ordersInSystem.put(dynamicOrder.getSerialNumber(),dynamicOrder);
     }
 
