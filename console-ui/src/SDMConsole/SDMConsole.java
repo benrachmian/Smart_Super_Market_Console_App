@@ -153,8 +153,8 @@ public class SDMConsole {
     private void updateStoreProductsAndPrices() {
         DTOStore storeToUpdate = chooseStoreToUpdate();
         showUpdateOptions(storeToUpdate);
-        int choosenOption = Validation.getValidChoice(1,3);
-        switch(choosenOption){
+        int chosenOption = Validation.getValidChoice(1,3);
+        switch(chosenOption){
             case 1:
                 chooseProductFromStoreAndDelete(storeToUpdate);
                 break;
@@ -218,18 +218,22 @@ public class SDMConsole {
     }
 
     private void chooseProductFromStoreAndDelete(DTOStore storeToUpdate) {
-        printProductsInStore(storeToUpdate);
-        System.out.println("Please choose a product you would like to delete by inserting its serial number: ");
-        DTOProductInStore chosenProductToDelete = Validation.chooseValidProductFromStore(storeToUpdate);
-        if(sdmSystem.deleteProductFromStore(chosenProductToDelete)){
-            System.out.printf("The product %s ID: %d was deleted successfully!\n",
-                    storeToUpdate.getStoreName(),
-                    storeToUpdate.getStoreSerialNumber());
+        if(storeToUpdate.getProductsInStore().size() > 1) {
+            printProductsInStore(storeToUpdate);
+            System.out.println("Please choose a product you would like to delete by inserting its serial number: ");
+            DTOProductInStore chosenProductToDelete = Validation.chooseValidProductFromStore(storeToUpdate);
+            if (sdmSystem.deleteProductFromStore(chosenProductToDelete)) {
+                System.out.printf("The product %s ID: %d was deleted successfully!\n",
+                        storeToUpdate.getStoreName(),
+                        storeToUpdate.getStoreSerialNumber());
+            } else {
+                System.out.printf("You can't delete product %d because store %d is the only one selling it!\n",
+                        chosenProductToDelete.getProductSerialNumber(),
+                        storeToUpdate.getStoreSerialNumber());
+            }
         }
         else{
-            System.out.printf("You can't delete product %d because store %d is the only one selling it!\n",
-                    chosenProductToDelete.getProductSerialNumber(),
-                    storeToUpdate.getStoreSerialNumber());
+            System.out.println("You can't delete products from this store because it has only one product");
         }
     }
 
@@ -698,8 +702,7 @@ public class SDMConsole {
                 System.out.println( "There are no stores selling the product! ");
             }
             else{
-                //System.out.println(product.averagePriceOfProduct());
-                System.out.println(sdmSystem.getAveragePriceOfProduct(product.getProductSerialNumber()));
+                System.out.printf("%.2f\n",sdmSystem.getAveragePriceOfProduct(product.getProductSerialNumber()));
             }
             System.out.println("Amount sold in all stores: " + product.getAmountSoldInAllStores());
             System.out.println("-------------------------------------------------------------------");

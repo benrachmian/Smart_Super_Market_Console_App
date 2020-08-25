@@ -62,11 +62,11 @@ public class Validation {
     public static boolean checkIfLocationInRange(int x, int y, int minCoordinate, int maxCoordinate) {
         boolean inRange = true;
         if (!isInRange(x, minCoordinate, maxCoordinate)) {
-            System.out.println("X coordinate is not in range!");
+            System.out.println("X coordinate is not in range! it must be between " + minCoordinate + " to " + maxCoordinate);
             inRange = false;
         }
         if (!isInRange(y, minCoordinate, maxCoordinate)) {
-            System.out.println("Y coordinate is not in range!");
+            System.out.println("Y coordinate is not in range! it must be between " + minCoordinate + " to " + maxCoordinate);
             inRange = false;
         }
 
