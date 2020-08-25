@@ -1,13 +1,11 @@
 package SDMSystemDTO.product;
 
-import SDMSystemDTO.store.DTOStore;
 
-import java.util.Collection;
 
 public class DTOProductInStore extends DTOProduct {
-    private float price;
+    private final float price;
     private float amountSoldInStore;
-    private int storeTheProductBelongsID;
+    private final int storeTheProductBelongsID;
 
     public DTOProductInStore(int productSerialNumber,
                              String productName,

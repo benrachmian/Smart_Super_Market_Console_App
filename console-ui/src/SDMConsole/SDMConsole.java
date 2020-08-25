@@ -107,9 +107,7 @@ public class SDMConsole {
                 System.out.println("The file was loaded successfully!");
             } catch (FileNotFoundException e) {
                 System.out.println("There is no such file! Please try again with different file!");
-            } catch (IOException e) {
-                System.out.println("Something went wrong with the loading. Please try again with different file!");
-            } catch (ClassNotFoundException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 System.out.println("Something went wrong with the loading. Please try again with different file!");
             }
         }
@@ -205,8 +203,7 @@ public class SDMConsole {
     private DTOProduct chooseProductToAdd(Map<Integer, DTOProduct> productsTheStoreDoesntSell) {
         System.out.println("The products you can add to store are:");
         printProducts(productsTheStoreDoesntSell.values());
-        DTOProduct chosenProduct = Validation.chooseValidProductFromProducts(productsTheStoreDoesntSell);
-        return chosenProduct;
+        return Validation.chooseValidProductFromProducts(productsTheStoreDoesntSell);
     }
 
     private void printProducts( Collection<DTOProduct> products) {
@@ -333,7 +330,7 @@ public class SDMConsole {
     private void showSummeryOfDynamicOrder(Map<Integer, Collection<Pair<Float, DTOProductInStore>>> cheapestBasket, Point userLocation) {
         float deliveryCost;
         float totalDeliveryCost = 0;
-        float costOfProductsInStore = 0;
+        float costOfProductsInStore;
         float totalCostOfProductsInStore = 0;
         System.out.println("Stores you are buying from:");
         for (Integer storeSerialNumber : cheapestBasket.keySet()) {
@@ -376,7 +373,7 @@ public class SDMConsole {
         //Pair: amount,product
         Collection<Pair<Float, DTOProduct>> productsInOrder = new LinkedList<>();
         boolean succeeded = false;
-        float deliveryCost = 0;
+        float deliveryCost;
         printAllStoresIdNamePpk();
         do {
             try {
@@ -452,15 +449,6 @@ public class SDMConsole {
         System.out.println("Store ppk: " + store.getPpk());
         System.out.printf("Delivery cost: %.2f\n", deliveryCost );
     }
-
-//    private float calcProductsInOrderCost(Collection<Pair<Float, DTOProductInStore>> productsInOrder) {
-//        float res = 0;
-//        for(Pair<Float, DTOProductInStore> dtoProductInorder : productsInOrder){
-//            res += (dtoProductInorder.getValue().getPrice() * dtoProductInorder.getKey());
-//        }
-//
-//        return res;
-//    }
 
     private void chooseProducts(Collection<Pair<Float,DTOProduct>> productsInOrder, boolean isDynamic, DTOStore chosenStore) {
         Scanner s = new Scanner(System.in);
@@ -619,10 +607,6 @@ public class SDMConsole {
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
-        //}
-        //else{
-        //    System.out.println("The file is not an XML file!");
-      //  }
         return succeeded;
     }
 

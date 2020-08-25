@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.LinkedList;
 
 public class StaticOrder extends Order {
-    private Store storeFromWhomTheOrderWasMade;
+    private final Store storeFromWhomTheOrderWasMade;
 
     public StaticOrder(Date orderDate,
                        Collection<Pair<Float, ProductInStore>> productsInOrder,
@@ -28,7 +28,8 @@ public class StaticOrder extends Order {
     public DTOOrder createDTOOrderFromOrder() {
         Collection<DTOStore> storesFromWhomTheOrderWasMade = new LinkedList();
         storesFromWhomTheOrderWasMade.add(storeFromWhomTheOrderWasMade.createDTOStore());
-        DTOOrder dtoOrder = new DTOOrder(getOrderDate(),
+
+        return new DTOOrder(getOrderDate(),
                 getDTOProductsInOrder(),
                 getProductsCost(),
                 getDeliveryCost(),
@@ -36,8 +37,6 @@ public class StaticOrder extends Order {
                 storesFromWhomTheOrderWasMade,
                 getAmountOfProducts(),
                 getAmountOfProductsKinds());
-
-        return dtoOrder;
     }
 
     public Store getStoreFromWhomTheOrderWasMade() {

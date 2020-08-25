@@ -2,9 +2,9 @@ package SDMSystem.exceptions;
 
 public class ExistenceException extends RuntimeException{
 
-    private int objectSerialNumber;
-    private String objectRelevance; //for example: "Store", "System", "Bag"
-    private String objectKind; //for example: "Store", "Product", "Car"
+    private final int objectSerialNumber;
+    private final String objectRelevance; //for example: "Store", "System", "Bag"
+    private final String objectKind; //for example: "Store", "Product", "Car"
     boolean doesExist;
     private final String EXCEPTION_MESSAGE_EXIST = "%s %d already exists in the %s...";
     private final String EXCEPTION_MESSAGE_NOT_EXIST = "%s %d doesn't exist in the %s...";

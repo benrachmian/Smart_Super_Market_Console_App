@@ -1,6 +1,5 @@
 package SDMSystem.store;
 
-import SDMSystem.Feedback;
 import SDMSystem.HasSerialNumber;
 import SDMSystem.location.Locationable;
 import SDMSystem.order.Order;
@@ -18,13 +17,13 @@ import java.util.*;
 public class Store implements Locationable, HasSerialNumber<Integer>, Serializable {
 
     private static int generatedSerialNumber = 1000;
-    private Map<Integer,ProductInStore> productsInStore;
-    private Point storeLocation;
-    private float ppk;
+    private final Map<Integer,ProductInStore> productsInStore;
+    private final Point storeLocation;
+    private final float ppk;
     private final int storeSerialNumber;
-    private String storeName;
-    private Collection<Order> ordersFromStore;
-    private Collection<Feedback> storeFeedbacks;
+    private final String storeName;
+    private final Collection<Order> ordersFromStore;
+    //private final Collection<Feedback> storeFeedbacks;
     private float totalProfitFromDelivery;
 
     public Store(Point storeLocation, float ppk, String storeName) { //ctor
@@ -34,7 +33,7 @@ public class Store implements Locationable, HasSerialNumber<Integer>, Serializab
         this.storeSerialNumber = generatedSerialNumber++;
         this.storeName = storeName;
         this.ordersFromStore = new HashSet<>();
-        this.storeFeedbacks = null;
+        //this.storeFeedbacks = null;
         this.totalProfitFromDelivery = 0;
     }
 
@@ -45,7 +44,7 @@ public class Store implements Locationable, HasSerialNumber<Integer>, Serializab
         this.storeSerialNumber = storeSerialNumber;
         this.storeName = storeName;
         this.ordersFromStore = new HashSet<>();
-        this.storeFeedbacks = null;
+        //this.storeFeedbacks = null;
     }
 
     public void addNewProductToStore(Product newProduct, float price){
@@ -159,7 +158,7 @@ public class Store implements Locationable, HasSerialNumber<Integer>, Serializab
 //    }
 
     public DTOStore createDTOStore() {
-        DTOStore newDTOStore = new DTOStore(
+        return new DTOStore(
                 getDTOProductsInStore(),
                 storeLocation,
                 ppk,
@@ -167,7 +166,6 @@ public class Store implements Locationable, HasSerialNumber<Integer>, Serializab
                 storeName,
                 //getDTOOrdersFromStore(),
                 totalProfitFromDelivery);
-        return newDTOStore;
     }
 
 
@@ -186,15 +184,15 @@ public class Store implements Locationable, HasSerialNumber<Integer>, Serializab
         return dtoOrders;
     }
 
-    private Collection<DTOProductInStore> createDTOProductInStoreCollection(Collection<ProductInStore> productsCollection) {
-        Collection<DTOProductInStore> dtoProductInStoreCollection = new LinkedList();
-        for (ProductInStore productInStore : productsCollection){
-            DTOProductInStore dtoProductInStore = productInStore.createDTOProductInStore();
-            dtoProductInStoreCollection.add(dtoProductInStore);
-        }
-
-        return dtoProductInStoreCollection;
-    }
+//    private Collection<DTOProductInStore> createDTOProductInStoreCollection(Collection<ProductInStore> productsCollection) {
+//        Collection<DTOProductInStore> dtoProductInStoreCollection = new LinkedList();
+//        for (ProductInStore productInStore : productsCollection){
+//            DTOProductInStore dtoProductInStore = productInStore.createDTOProductInStore();
+//            dtoProductInStoreCollection.add(dtoProductInStore);
+//        }
+//
+//        return dtoProductInStoreCollection;
+//    }
 
 //    public void makeNewOrderAndAddToOrdersIsSystem(Date orderDate,
 //                                                   float deliveryCost,

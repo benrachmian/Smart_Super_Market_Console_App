@@ -11,8 +11,8 @@ import java.util.Map;
 
 class StoresInSystem {
 
-    private Map<Integer, Store> storesInSystemBySerialNumber;
-    private Map<Point, Store> storesInSystemByLocation;
+    private final Map<Integer, Store> storesInSystemBySerialNumber;
+    private final Map<Point, Store> storesInSystemByLocation;
 
     public StoresInSystem() {
         storesInSystemBySerialNumber = new HashMap<>();

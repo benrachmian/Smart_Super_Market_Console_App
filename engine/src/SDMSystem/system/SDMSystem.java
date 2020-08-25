@@ -27,7 +27,7 @@ public class SDMSystem {
     //In order to create two different way to find a store - by serial number and by location
     private StoresInSystem storesInSystem;
     private Map<Integer,Product> productsInSystem;
-    private Map<Integer, Order> ordersInSystem;
+    private final Map<Integer, Order> ordersInSystem;
 
     public SDMSystem() {
         storesInSystem = new StoresInSystem();
@@ -230,14 +230,14 @@ public class SDMSystem {
         ordersInSystem.put(dynamicOrder.getSerialNumber(),dynamicOrder);
     }
 
-    private Map<Integer, Store> getStoresSellingTheProductsFromBasket(Map<Integer, Collection<Pair<Float, DTOProductInStore>>> cheapestBasketDTO) {
-        Map<Integer,Store> storesSellingTheProducts = new HashMap<>();
-        for(Integer storeSerialNumber : cheapestBasketDTO.keySet()){
-            storesSellingTheProducts.put(storeSerialNumber,storesInSystem.getStoreInSystem(storeSerialNumber));
-        }
-
-        return storesSellingTheProducts;
-    }
+//    private Map<Integer, Store> getStoresSellingTheProductsFromBasket(Map<Integer, Collection<Pair<Float, DTOProductInStore>>> cheapestBasketDTO) {
+//        Map<Integer,Store> storesSellingTheProducts = new HashMap<>();
+//        for(Integer storeSerialNumber : cheapestBasketDTO.keySet()){
+//            storesSellingTheProducts.put(storeSerialNumber,storesInSystem.getStoreInSystem(storeSerialNumber));
+//        }
+//
+//        return storesSellingTheProducts;
+//    }
 
     private Collection<Pair<Float,ProductInStore>> getAllProductsFromSubOrdersAndAmountOfProductsAndKinds(Collection<StaticOrder> subOrders, int[] amountOfProductsAndKinds) {
         Collection<Pair<Float,ProductInStore>> allProductsInOrder = new LinkedList<>();
@@ -416,10 +416,8 @@ public class SDMSystem {
     }
 
     private Collection<Point> createStoresLocationCollection() {
-        Collection<Point> storesLocation = new LinkedList<>();
-        storesLocation.addAll(storesInSystem.getStoresInSystemByLocation().keySet());
 
-        return storesLocation;
+        return new LinkedList<>(storesInSystem.getStoresInSystemByLocation().keySet());
     }
 
     public Map<Integer, Collection<Pair<Float,DTOProductInStore>>> getCheapestBasket(Collection<Pair<Float, DTOProduct>> productsInOrder) {
@@ -565,7 +563,7 @@ public class SDMSystem {
     }
 
     private  Map<Integer,Order> getOrdersFromFile(String filePath) throws IOException, ClassNotFoundException {
-        Map<Integer, Order> orders = null;
+        Map<Integer, Order> orders;
         try (ObjectInputStream in =
                      new ObjectInputStream(
                              new FileInputStream(filePath))) {

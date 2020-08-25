@@ -1,22 +1,20 @@
 package SDMSystemDTO.store;
 
 
-import SDMSystemDTO.DTOFeedback;
 import SDMSystemDTO.product.DTOProductInStore;
 
 import java.awt.*;
-import java.util.Collection;
 import java.util.Map;
 
 public class DTOStore {
-    private Map<Integer, DTOProductInStore> productsInStore;
-    private Point storeLocation;
-    private float ppk;
+    private final Map<Integer, DTOProductInStore> productsInStore;
+    private final Point storeLocation;
+    private final float ppk;
     private final int storeSerialNumber;
-    private String storeName;
+    private final String storeName;
     //private Collection<DTOOrder> ordersFromStore;
     //private Collection<DTOFeedback> storeFeedbacks;
-    private float totalProfitFromDelivery;
+    private final float totalProfitFromDelivery;
 
 
     public DTOStore(Map<Integer, DTOProductInStore> productsInStore,

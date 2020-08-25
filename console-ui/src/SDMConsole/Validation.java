@@ -5,7 +5,6 @@ import SDMSystemDTO.product.DTOProduct;
 import SDMSystemDTO.product.DTOProductInStore;
 import SDMSystemDTO.store.DTOStore;
 
-import java.util.Collection;
 import java.util.InputMismatchException;
 import java.util.Map;
 import java.util.Scanner;

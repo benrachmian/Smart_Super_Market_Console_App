@@ -25,7 +25,8 @@ public class DynamicOrder extends Order {
 
     @Override
     public DTOOrder createDTOOrderFromOrder() {
-        DTOOrder dtoOrder = new DTOOrder(getOrderDate(),
+
+        return new DTOOrder(getOrderDate(),
                 getDTOProductsInOrder(),
                 getProductsCost(),
                 getDeliveryCost(),
@@ -33,8 +34,6 @@ public class DynamicOrder extends Order {
                 createDTOStoresFromWhomTheOrderWasMade(),
                 getAmountOfProducts(),
                 getAmountOfProductsKinds());
-
-        return dtoOrder;
     }
 
     private Collection<DTOStore> createDTOStoresFromWhomTheOrderWasMade() {

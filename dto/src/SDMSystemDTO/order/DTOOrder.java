@@ -8,15 +8,15 @@ import java.util.Collection;
 import java.util.Date;
 
 public class DTOOrder {
-    private Date orderDate;
-    private Collection<Pair<Float,DTOProductInStore>> productsInOrder;
+    private final Date orderDate;
+    private final Collection<Pair<Float,DTOProductInStore>> productsInOrder;
     //private Customer whoOrdered;
-    private float productsCost;
-    private float deliveryCost;
+    private final float productsCost;
+    private final float deliveryCost;
     private final int orderSerialNumber;
-    private Collection<DTOStore> storesFromWhomTheOrderWasMade;
-    private int amountOfProducts;
-    private int amountOfProductsKinds;
+    private final Collection<DTOStore> storesFromWhomTheOrderWasMade;
+    private final int amountOfProducts;
+    private final int amountOfProductsKinds;
 
 
     public DTOOrder(Date orderDate,

@@ -4,7 +4,6 @@ import SDMSystem.HasSerialNumber;
 import SDMSystem.store.Store;
 import SDMSystemDTO.product.DTOProduct;
 import SDMSystemDTO.product.WayOfBuying;
-import SDMSystemDTO.store.DTOStore;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -41,12 +40,11 @@ public class Product implements HasSerialNumber<Integer>, Serializable {
     }
 
     public  DTOProduct createDTOProduct() {
-        DTOProduct dtoProduct = new DTOProduct(
+        return new DTOProduct(
                 productSerialNumber,
                 productName,
                 wayOfBuying,
                 amountSoldInAllStores);
-        return dtoProduct;
     }
 
     public Collection<Store> getStoresSellingTheProduct() {

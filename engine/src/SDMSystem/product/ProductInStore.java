@@ -9,11 +9,6 @@ public class ProductInStore extends Product {
     private float amountSoldInStore;
     Store storeTheProductBelongs;
 
-    public ProductInStore(String productName, WayOfBuying wayOfBuying, float price) {
-        super(productName, wayOfBuying);
-        this.price = price;
-        this.amountSoldInStore = 0;
-    }
 
     public ProductInStore(Product newProduct, float price, Store storeTheProductBelongs) {
         super(newProduct);
@@ -38,7 +33,7 @@ public class ProductInStore extends Product {
     }
 
     public DTOProductInStore createDTOProductInStore() {
-        DTOProductInStore newDTOProductInStore = new DTOProductInStore(
+        return new DTOProductInStore(
                 productSerialNumber,
                 productName,
                 wayOfBuying,
@@ -46,7 +41,6 @@ public class ProductInStore extends Product {
                 getPrice(),
                 amountSoldInStore,
                 storeTheProductBelongs.getSerialNumber());
-        return newDTOProductInStore;
     }
 
     public void setPrice(float newPrice) {

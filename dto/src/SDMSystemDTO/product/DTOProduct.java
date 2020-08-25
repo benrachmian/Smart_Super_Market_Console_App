@@ -1,19 +1,12 @@
 package SDMSystemDTO.product;
 
-import SDMSystemDTO.store.DTOStore;
-
-import java.util.Collection;
-import java.util.LinkedList;
-
-
-
 public class DTOProduct {
 
     protected final int productSerialNumber;
     protected final String productName;
     protected final WayOfBuying wayOfBuying;
    // protected Collection<DTOStore> storesSellingTheProduct = new LinkedList<>();
-    protected float amountSoldInAllStores = 0;
+    protected float amountSoldInAllStores;
 
     public DTOProduct(int productSerialNumber,
                       String productName,
