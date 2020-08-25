@@ -1,5 +1,6 @@
 package SDMSystem.order;
 
+import SDMSystem.HasSerialNumber;
 import SDMSystem.product.ProductInStore;
 import SDMSystemDTO.product.DTOProductInStore;
 import SDMSystemDTO.product.WayOfBuying;
@@ -11,7 +12,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 
-public abstract class Order implements Serializable {
+public abstract class Order implements Serializable, HasSerialNumber<Integer> {
     private static int generatedSerialNumber = 1000;
     private Date orderDate;
     private Collection<Pair<Float,ProductInStore>> productsInOrder;
@@ -19,7 +20,7 @@ public abstract class Order implements Serializable {
     //private Customer whoOrdered;
     private float productsCost;
     private float deliveryCost;
-    private final int orderSerialNumber;
+    private int orderSerialNumber;
     ///private Map<Integer, Store> storesFromWhomTheOrderWasMade;
     private int amountOfProducts;
     private int amountOfProductsKinds;
@@ -45,6 +46,10 @@ public abstract class Order implements Serializable {
 
     }
 
+    public void generateNewSerialNumber(){
+        this.orderSerialNumber = generatedSerialNumber++;
+    }
+
 //    public Map<Integer, Store> getStoresFromWhomTheOrderWasMade() {
 //        return storesFromWhomTheOrderWasMade;
 //    }
@@ -52,6 +57,9 @@ public abstract class Order implements Serializable {
 //    public Collection<Order> getSubOrders() {
 //        return subOrders;
 //    }
+
+
+
 
     public abstract DTOOrder createDTOOrderFromOrder();
 //        DTOOrder dtoOrder = new DTOOrder(getOrderDate(),
@@ -104,7 +112,8 @@ public abstract class Order implements Serializable {
         return amountOfProductsKinds;
     }
 
-    public int getOrderSerialNumber() {
+    @Override
+    public Integer getSerialNumber() {
         return orderSerialNumber;
     }
 

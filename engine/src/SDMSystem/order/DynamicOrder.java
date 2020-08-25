@@ -1,7 +1,6 @@
 package SDMSystem.order;
 
 import SDMSystem.product.ProductInStore;
-import SDMSystem.store.Store;
 import SDMSystemDTO.order.DTOOrder;
 import SDMSystemDTO.store.DTOStore;
 import javafx.util.Pair;
@@ -9,7 +8,6 @@ import javafx.util.Pair;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.Map;
 
 public class DynamicOrder extends Order {
     private Collection<StaticOrder> subOrders;
@@ -31,7 +29,7 @@ public class DynamicOrder extends Order {
                 getDTOProductsInOrder(),
                 getProductsCost(),
                 getDeliveryCost(),
-                getOrderSerialNumber(),
+                getSerialNumber(),
                 createDTOStoresFromWhomTheOrderWasMade(),
                 getAmountOfProducts(),
                 getAmountOfProductsKinds());

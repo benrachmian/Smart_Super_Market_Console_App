@@ -32,7 +32,7 @@ public class StaticOrder extends Order {
                 getDTOProductsInOrder(),
                 getProductsCost(),
                 getDeliveryCost(),
-                getOrderSerialNumber(),
+                getSerialNumber(),
                 storesFromWhomTheOrderWasMade,
                 getAmountOfProducts(),
                 getAmountOfProductsKinds());

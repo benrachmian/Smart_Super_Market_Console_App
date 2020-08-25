@@ -186,7 +186,7 @@ public class SDMSystem {
         Order newOrder = createdNewStaticOrderObjectAndUpdateAmountSoldInStore(orderDate,deliveryCost,productsInOrder,storeTheProductBelong);
         updateAmountSoldInSystemForEveryProductInOrder(productsInOrder);
         storeTheProductBelong.addOrder(newOrder,deliveryCost);
-        ordersInSystem.put(newOrder.getOrderSerialNumber(),newOrder);
+        ordersInSystem.put(newOrder.getSerialNumber(),newOrder);
         //addOrderWithoutSubOrdersToSystem(newOrder,chosenStore.getStoreSerialNumber());
     }
 
@@ -227,7 +227,7 @@ public class SDMSystem {
                 amountOfProductsAndKinds[1],
                 subOrders);
         //updateAmountsSoldOfProduct(allProductsInOrder);
-        ordersInSystem.put(dynamicOrder.getOrderSerialNumber(),dynamicOrder);
+        ordersInSystem.put(dynamicOrder.getSerialNumber(),dynamicOrder);
     }
 
     private Map<Integer, Store> getStoresSellingTheProductsFromBasket(Map<Integer, Collection<Pair<Float, DTOProductInStore>>> cheapestBasketDTO) {
@@ -520,6 +520,7 @@ public class SDMSystem {
 
     private void addLoadedOrdersToSystem(Map<Integer, Order> orders) {
         for(Order order : orders.values()){
+            order.generateNewSerialNumber();
             if(order instanceof StaticOrder){
                 addLoadedStaticOrderToSystem((StaticOrder)order);
             }
@@ -537,14 +538,15 @@ public class SDMSystem {
 
     private void addLoadedDynamicOrderToSystem(DynamicOrder order) {
         for(StaticOrder staticOrder : order.getSubOrders()){
+            staticOrder.generateNewSerialNumber();
             addLoadedStaticOrderToItsStoreAndUpdateAmounts(staticOrder);
         }
-        ordersInSystem.put(order.getOrderSerialNumber(),order);
+        ordersInSystem.put(order.getSerialNumber(),order);
     }
 
     private void addLoadedStaticOrderToSystem(StaticOrder order) {
         addLoadedStaticOrderToItsStoreAndUpdateAmounts(order);
-        ordersInSystem.put(order.getOrderSerialNumber(),order);
+        ordersInSystem.put(order.getSerialNumber(),order);
     }
 
     private void addLoadedStaticOrderToItsStoreAndUpdateAmounts(StaticOrder order) {
