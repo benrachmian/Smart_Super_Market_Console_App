@@ -415,8 +415,9 @@ public class SDMSystem {
     }
 
     public boolean checkIfLocationIsUnique(Point userLocation) {
-        Collection<Point> storesLocation = createStoresLocationCollection();
-        return LocationValidation.checkIfUniqueLocation(userLocation,storesLocation);
+//        Collection<Point> storesLocation = createStoresLocationCollection();
+//        return LocationValidation.checkIfUniqueLocation(userLocation,storesLocation);
+        return !storesInSystem.getStoresInSystemByLocation().containsKey(userLocation);
     }
 
     private Collection<Point> createStoresLocationCollection() {
